@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CoreGestionTextilLevel"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/FWCommon"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/FWLib"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/FWLibJEE"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

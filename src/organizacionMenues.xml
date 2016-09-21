@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menues>
+	<GrupoModulos nombre="Módulos" esDefault="true">
+		<listaModulos>
+				<newItem class="main.acciones.VerLectorRemitoEntradaClienteAction" nombre="Lector de Remito de Entrada" id="1" action="true"/>
+		</listaModulos>
+	</GrupoModulos>
+</menues>
