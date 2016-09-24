@@ -1,5 +1,7 @@
 package main;
 
+import javax.swing.UIManager;
+
 import ar.com.fwcommon.boss.BossEstilos;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.templates.main.FWMainTemplate;
@@ -15,7 +17,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 
 	static {
 		try {
-			initSkintModerno();
+			initLookAndFeel(null);
 		} catch (FWException e) {
 			e.printStackTrace();
 		}
@@ -23,7 +25,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 
 	protected GTLLiteClientMainTemplate(int idAplicacion, String version) throws FWException {
 		super(idAplicacion, version);
-		construirMenues();		
+		construirMenues();
 	}
 
 	@Override
@@ -38,19 +40,34 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 
 	private void construirMenues() {
 	}
-	
 
-	private static void initSkintModerno() throws FWException {
-		SkinModerno skinModerno = new SkinModerno(ESkin.AZUL);
-		BossEstilos.setDefaultSkin(skinModerno);
-		BossEstilos.setDefaultFont(skinModerno.getDecorator().getDefaultFont());
-		BossEstilos.setSecondaryFont(skinModerno.getDecorator().getSecondaryFont());
-		if(MiscUtil.isMacOS()) {
-			BossEstilos.ajustarFuenteComponentes();
+	private static void initLookAndFeel(ESkin skin) throws FWException {
+		if (skin != null) {
+			SkinModerno skinModerno = new SkinModerno(skin);
+			BossEstilos.setDefaultSkin(skinModerno);
+			BossEstilos.setDefaultFont(skinModerno.getDecorator().getDefaultFont());
+			BossEstilos.setSecondaryFont(skinModerno.getDecorator().getSecondaryFont());
+			if (MiscUtil.isMacOS()) {
+				BossEstilos.ajustarFuenteComponentes();
+			}
+			skinModerno.init();
+
+		} else {
+			try {
+				UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+			} catch (Exception e) {
+				SkinModerno skinModerno = new SkinModerno(ESkin.AZUL);
+				BossEstilos.setDefaultSkin(skinModerno);
+				BossEstilos.setDefaultFont(skinModerno.getDecorator().getDefaultFont());
+				BossEstilos.setSecondaryFont(skinModerno.getDecorator().getSecondaryFont());
+				if (MiscUtil.isMacOS()) {
+					BossEstilos.ajustarFuenteComponentes();
+				}
+				skinModerno.init();
+			}
 		}
-		skinModerno.init();
 	}
-	
+
 	@Override
 	protected void postConstruccion() throws FWException {
 		crearTitulo();
@@ -59,7 +76,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 	@Override
 	protected final void preConstruccion() {
 		super.preConstruccion();
-		//Configura todos los Boss
+		// Configura todos los Boss
 		configurarAplicacion();
 	}
 
@@ -70,7 +87,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 
 	private void crearTitulo() throws FWException {
 		StringBuffer sb = new StringBuffer("Textil Level - Terminal simple");
-		if(version != null) {
+		if (version != null) {
 			sb.append(" v").append(version);
 		}
 		setTitle(sb.toString());
