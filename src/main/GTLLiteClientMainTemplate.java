@@ -41,7 +41,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 	
 
 	private static void initSkintModerno() throws FWException {
-		SkinModerno skinModerno = new SkinModerno(ESkin.ROJO);
+		SkinModerno skinModerno = new SkinModerno(ESkin.AZUL);
 		BossEstilos.setDefaultSkin(skinModerno);
 		BossEstilos.setDefaultFont(skinModerno.getDecorator().getDefaultFont());
 		BossEstilos.setSecondaryFont(skinModerno.getDecorator().getSecondaryFont());
