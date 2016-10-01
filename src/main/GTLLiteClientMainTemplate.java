@@ -6,11 +6,10 @@ import ar.com.fwcommon.boss.BossEstilos;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.templates.main.FWMainTemplate;
 import ar.com.fwcommon.templates.main.config.IConfigClienteManager;
-import ar.com.fwcommon.templates.main.login.EmptyLoginManager;
 import ar.com.fwcommon.templates.main.menu.MenuAyuda;
 import ar.com.fwcommon.util.MiscUtil;
 
-public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager, GTLLiteConfigClienteManager> {
+public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmptyLoginManager, GTLLiteConfigClienteManager> {
 
 	private static final long serialVersionUID = -7589061723941536496L;
 	protected MenuAyuda menuAyuda;
@@ -34,8 +33,8 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<EmptyLoginManager,
 	}
 
 	@Override
-	protected EmptyLoginManager crearLoginManager() {
-		return new EmptyLoginManager(idAplicacion);
+	protected GTLLiteClientEmptyLoginManager crearLoginManager() {
+		return new GTLLiteClientEmptyLoginManager(idAplicacion);
 	}
 
 	private void construirMenues() {
