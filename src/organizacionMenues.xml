@@ -3,6 +3,7 @@
 	<GrupoModulos nombre="Módulos" esDefault="true">
 		<listaModulos>
 				<newItem class="main.acciones.VerLectorRemitoEntradaClienteAction" nombre="Lector de Remito de Entrada" id="1" action="true"/>
+				<newItem class="main.acciones.VerFrameOrdenarRemitoEntradaClienteAction" nombre="Ordenar piezas remito entrada" id="2" action="true"/>
 		</listaModulos>
 	</GrupoModulos>
 </menues>
