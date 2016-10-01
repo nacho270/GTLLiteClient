@@ -1,7 +1,8 @@
 package main;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.entidades.Modulo;
@@ -15,9 +16,10 @@ public class GTLLiteClientEmptyLoginManager extends EmptyLoginManager {
 
 	@Override
 	public List<Modulo> getModulosUsuario() throws FWException {
-		List<Modulo> modulos = new ArrayList<Modulo>();
-		modulos.add(new Modulo(1, "Lector", "main.acciones.VerLectorRemitoEntradaClienteAction", -1, true));
-		return modulos;
+		return Lists.newArrayList( //
+			new Modulo(1, "Lector", "main.acciones.VerLectorRemitoEntradaClienteAction", -1, true),
+			new Modulo(2, "Ordenador piezas remito entrada", "main.acciones.VerFrameOrdenarRemitoEntradaClienteAction", -1, true) //
+		);
 	}
 
 }
