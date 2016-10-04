@@ -6,5 +6,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/FWCommon"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/FWLib"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/FWLibJEE"/>
+	<classpathentry kind="lib" path="lib/barcode4j.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

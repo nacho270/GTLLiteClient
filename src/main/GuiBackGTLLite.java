@@ -23,13 +23,17 @@ public class GuiBackGTLLite extends GTLLiteClientMainTemplate {
 
 	public static void main(String[] args) {
 		try {
-			System.getProperties().setProperty("applicationName", "GTL Lite");
-			System.getProperties().setProperty("va.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+			System.getProperties().setProperty("applicationName", "GTL");
+			System.getProperties().setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
 			System.getProperties().setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
 			System.getProperties().setProperty("cltimezone","GMT-3");
+			if(System.getProperty("java.naming.provider.url_otro_sistema")==null){
+				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", "localhost:1099");
+			}
 			if(System.getProperty("java.naming.provider.url")==null){
 				System.getProperties().setProperty("java.naming.provider.url", "localhost:1099");
 			}
+			
 			GuiBackGTLLite guiBackTextilLevel = new GuiBackGTLLite(-1, VERSION);
 //			EventQueue queue = Toolkit.getDefaultToolkit().getSystemEventQueue();
 //			queue.push(new EventQueueProxy(guiBackTextilLevel));
