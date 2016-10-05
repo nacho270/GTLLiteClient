@@ -38,9 +38,11 @@ public class LectorODT extends JDialog {
 	
 	private JButton btnSalir;
 	private FWJNumericTextField txtCodODT;
+	private Frame owner;
 
 	public LectorODT(Frame owner) {
 		super(owner);
+		this.owner = owner;
 		setUpComponentes();
 		setUpScreen();
 	}
@@ -121,7 +123,7 @@ public class LectorODT extends JDialog {
 	            public void keyReleased(final KeyEvent e) {
 	                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 	                    if (txtCodODT.getText().trim().length() == 0) {
-	                    	FWJOptionPane.showErrorMessage(LectorODT.this, "No se ha leido el código", "Error");
+	                    	FWJOptionPane.showErrorMessage(LectorODT.this, "Ingrese un código.", "Error");
 	                        return;
 	                    }
 	                    finLectura();
@@ -137,8 +139,9 @@ public class LectorODT extends JDialog {
 	                    	reset();
 	                        return;
 	            		}
-	            		System.out.println("Se leyó la ODT " + odt.getId());
-	            		//TODO: Levantar el dialogo acá...
+	            		JDialogEditarPiezasODT jDialogEditarPiezasODT = new JDialogEditarPiezasODT(owner, odt);
+	            		GuiUtil.centrarEnFramePadre(jDialogEditarPiezasODT);
+	            		jDialogEditarPiezasODT.setVisible(true);
                     } catch (final RemoteException re) {
                     	FWJOptionPane.showErrorMessage(LectorODT.this, "Se ha producido un error al comunicarse con el servidor", "Error");
                     }

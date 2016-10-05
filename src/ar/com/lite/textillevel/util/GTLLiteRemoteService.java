@@ -19,7 +19,14 @@ public class GTLLiteRemoteService {
         }
         return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
     }
-    
+
+	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
+        if (odt.getCodigo().endsWith("0")) {
+            return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+        }
+        return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+	}
+
     public static class GTLLiteBeanFactory extends BeanFactoryRemoteAbstract {
 
     	private static GTLLiteBeanFactory instance;
