@@ -6,7 +6,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 
-import ar.com.lite.textillevel.gui.acciones.JFrameOrdenarPiezasRemitoEntrada;
+import ar.com.lite.textillevel.gui.acciones.LectorRemitoEntrada;
 
 public class VerFrameOrdenarRemitoEntradaClienteAction implements Action {
 
@@ -41,7 +41,6 @@ public class VerFrameOrdenarRemitoEntradaClienteAction implements Action {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		new JFrameOrdenarPiezasRemitoEntrada(frame).setVisible(true);
+		new LectorRemitoEntrada(frame).setVisible(true);
 	}
-
 }
