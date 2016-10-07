@@ -2,6 +2,7 @@ package ar.com.lite.textillevel.gui.acciones;
 
 import java.awt.Frame;
 
+import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 
 public class LectorRemitoEntrada extends AbstractDialogLectorCodigo<RemitoEntrada> {
@@ -16,10 +17,11 @@ public class LectorRemitoEntrada extends AbstractDialogLectorCodigo<RemitoEntrad
 	}
 
 	protected RemitoEntrada buscar(String codigo) throws Exception {
-		return null;
+		return GTLLiteRemoteService.getRemitoEntradaByNumero(Integer.valueOf(codigo));
 	}
 
-	protected void encontrado(RemitoEntrada obj) {
-		new JDialogOrdenarPiezasRemitoEntrada(owner, obj).setVisible(true);
+	protected void encontrado(RemitoEntrada remito) {
+		remito = GTLLiteRemoteService.getByIdEager(remito.getId());
+		new JDialogOrdenarPiezasRemitoEntrada(owner, remito).setVisible(true);
 	}
 }

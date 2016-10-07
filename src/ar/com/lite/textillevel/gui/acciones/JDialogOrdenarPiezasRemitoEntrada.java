@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -29,7 +28,6 @@ import ar.com.fwcommon.componentes.FWJTextField;
 import ar.com.fwcommon.componentes.PanelTabla;
 import ar.com.fwcommon.util.GuiUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
-import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.entidades.documentos.remito.PiezaRemito;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
@@ -51,7 +49,6 @@ public class JDialogOrdenarPiezasRemitoEntrada extends JDialog {
 	private FWJNumericTextField txtNroRemito;
 	private FWDateField txtFechaEmision;
 	private FWJTextField txtProducto;
-	private OrdenDeTrabajo odt;
 	private RemitoEntrada remitoEntrada;
 	private JPanel panTotales;
 	private JTextField txtMetros;
@@ -73,13 +70,12 @@ public class JDialogOrdenarPiezasRemitoEntrada extends JDialog {
 		setDatos();
 		setModal(true);
 	}
-
+	
 	private void setDatos() {
 		remitoEntrada.getProductoArticuloList().clear();
 		Cliente cliente = remitoEntrada.getCliente();
 		getTxtRazonSocial().setText(cliente.getRazonSocial());
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
-		getTxtProducto().setText(odt.getProductoArticulo().toString());
 		if (cliente.getDireccionReal() != null) {
 			getTxtDireccion().setText(cliente.getDireccionReal().getDireccion());
 			if (cliente.getDireccionReal().getLocalidad() != null) {
@@ -96,6 +92,7 @@ public class JDialogOrdenarPiezasRemitoEntrada extends JDialog {
 				GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 		add(getPanelBotones(), GenericUtils.createGridBagConstraints(0, 2, GridBagConstraints.WEST,
 				GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
+		GuiUtil.centrar(this);
 	}
 
 	private JPanel getPanTotales() {
@@ -287,21 +284,12 @@ public class JDialogOrdenarPiezasRemitoEntrada extends JDialog {
 			btnAceptar.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					if (validar()) {
-						acepto = true;
-						GTLLiteRemoteService.grabarPiezasODT(odt);
-						dispose();
-					}
-					return;
+
 				}
 
 			});
 		}
 		return btnAceptar;
-	}
-
-	private boolean validar() {
-		return true;
 	}
 
 	private PanelTablaPieza getPanTablaPieza() {
@@ -353,21 +341,9 @@ public class JDialogOrdenarPiezasRemitoEntrada extends JDialog {
 			row[COL_NRO_PIEZA] = nroPieza;
 			row[COL_METROS_PIEZA] = elemento.getMetros() == null ? null : elemento.getMetros().toString();
 			row[COL_OBSERVACIONES] = elemento.getObservaciones();
-			row[COL_ODT] = getODTFromPieza(elemento);
+			row[COL_ODT] = "";
 			row[COL_OBJ] = elemento;
 			return row;
-		}
-
-		private OrdenDeTrabajo getODTFromPieza(PiezaRemito pr) {
-			if (pr.getId() == null || pr.getId() == 0) {
-				return odtPiezaMap.get(pr);
-			}
-			for (Entry<PiezaRemito, OrdenDeTrabajo> entry : odtPiezaMap.entrySet()) {
-				if (entry.getKey().getId().equals(pr.getId())) {
-					return entry.getValue();
-				}
-			}
-			return null;
 		}
 
 		@SuppressWarnings("serial")
