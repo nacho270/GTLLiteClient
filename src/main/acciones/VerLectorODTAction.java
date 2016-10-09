@@ -6,6 +6,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 
+import ar.com.lite.textillevel.gui.acciones.EditarPiezasODTCallback;
 import ar.com.lite.textillevel.gui.acciones.LectorODT;
 
 public class VerLectorODTAction implements Action {
@@ -41,7 +42,7 @@ public class VerLectorODTAction implements Action {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		new LectorODT(frame);
+		new LectorODT(frame, new EditarPiezasODTCallback(frame));
 	}
 
 }

@@ -6,13 +6,14 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
 
-import ar.com.lite.textillevel.gui.acciones.LectorRemitoEntrada;
+import ar.com.lite.textillevel.gui.acciones.EditarPiezasODTCallback;
+import ar.com.lite.textillevel.gui.acciones.LectorODT;
 
-public class VerFrameOrdenarRemitoEntradaClienteAction implements Action {
+public class VerDialogoOrdenarPiezasODTAction implements Action {
 
 	private Frame frame;
 	
-	public VerFrameOrdenarRemitoEntradaClienteAction(Frame frame){
+	public VerDialogoOrdenarPiezasODTAction(Frame frame){
 		this.frame = frame;
 	}
 	
@@ -41,6 +42,6 @@ public class VerFrameOrdenarRemitoEntradaClienteAction implements Action {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		new LectorRemitoEntrada(frame).setVisible(true);
+		new LectorODT(frame, new EditarPiezasODTCallback(frame));
 	}
 }

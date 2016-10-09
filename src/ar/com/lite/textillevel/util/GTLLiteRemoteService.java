@@ -1,13 +1,10 @@
 package ar.com.lite.textillevel.util;
 
 import java.rmi.RemoteException;
-import java.util.List;
 import java.util.Properties;
 
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
-import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
-import ar.com.textillevel.facade.api.remote.RemitoEntradaFacadeRemote;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemote;
 
@@ -21,20 +18,6 @@ public class GTLLiteRemoteService {
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
 		}
 		return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
-	}
-
-	public static RemitoEntrada getRemitoEntradaByNumero(final Integer numeroRemito) {
-		// busco en A, si esta devuelvo y sino busco en B
-		List<RemitoEntrada> remitos = gtlBeanFactory1.getBean2(RemitoEntradaFacadeRemote.class)
-				.getByNroRemito(numeroRemito);
-		if (remitos != null && !remitos.isEmpty()) {
-			return remitos.get(0);
-		}
-		remitos = gtlBeanFactory2.getBean2(RemitoEntradaFacadeRemote.class).getByNroRemito(numeroRemito);
-		if (remitos != null && !remitos.isEmpty()) {
-			return remitos.get(0);
-		}
-		return null;
 	}
 
 	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
@@ -51,7 +34,6 @@ public class GTLLiteRemoteService {
 		protected GTLLiteBeanFactory() throws FWException {
 			super("GTL");
 			addJndiName(OrdenDeTrabajoFacadeRemote.class);
-			addJndiName(RemitoEntradaFacadeRemote.class);
 		}
 
 		public static GTLLiteBeanFactory getInstance() {
@@ -73,7 +55,6 @@ public class GTLLiteRemoteService {
 		protected GTLLiteOtroSistemaBeanFactory() throws FWException {
 			super("GTL", createPropertiesOtroSistema());
 			addJndiName(OrdenDeTrabajoFacadeRemote.class);
-			addJndiName(RemitoEntradaFacadeRemote.class);
 		}
 
 		private static Properties createPropertiesOtroSistema() {
@@ -97,15 +78,4 @@ public class GTLLiteRemoteService {
 		}
 
 	}
-
-	public static RemitoEntrada getByIdEager(Integer id) {
-		// busco en A, si esta devuelvo y sino busco en B
-		RemitoEntrada remito = gtlBeanFactory1.getBean2(RemitoEntradaFacadeRemote.class)
-				.getByIdEager(id);
-		if (remito != null) {
-			return remito;
-		}
-		return gtlBeanFactory2.getBean2(RemitoEntradaFacadeRemote.class).getByIdEager(id);
-	}
-
 }

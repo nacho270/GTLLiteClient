@@ -38,10 +38,12 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	private JButton btnSalir;
 	private FWJNumericTextField txtCod;
 
+	private DialogLectorCodigoCallback<T> callback;
 	
-	public AbstractDialogLectorCodigo(Frame owner, String titulo) {
+	public AbstractDialogLectorCodigo(Frame owner, String titulo, final DialogLectorCodigoCallback<T> callback) {
 		super(owner);
 		this.titulo = titulo;
+		this.callback = callback;
 		setUpComponentes();
 		setUpScreen();
 	}
@@ -132,13 +134,13 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 
 	            private void finLectura() {
 	            	try {
-	            		T obj = buscar(txtCod.getText().trim());
+	            		T obj = callback.buscar(txtCod.getText().trim());
 	            		if(obj == null) {
 	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código " + txtCod.getText().trim() + " es inexistente.", "Error");
 	                    	reset();
 	                        return;
 	            		}
-	            		encontrado(obj);
+	            		callback.encontrado(obj);
                     } catch (final Throwable re) {
                     	re.printStackTrace();
                     	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Se ha producido un error al comunicarse con el servidor", "Error");
@@ -155,7 +157,4 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 		}
 		return txtCod;
 	}
-
-	protected abstract T buscar(String codigo) throws Exception;
-	protected abstract void encontrado(T obj);
 }
