@@ -14,6 +14,7 @@ public class GTLLiteRemoteService {
 	private static GTLLiteOtroSistemaBeanFactory gtlBeanFactory2 = GTLLiteOtroSistemaBeanFactory.getInstance();
 
 	public static OrdenDeTrabajo getODTByCodigo(final String codigo) throws RemoteException {
+		// TODO: Arreglar. Esto no tiene la logica de apendear el el "0" o "1" al crear el codigo de barras. Hay que ver si se lo podemos agregar.
 		if (codigo.endsWith("0")) {
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
 		}
@@ -21,6 +22,7 @@ public class GTLLiteRemoteService {
 	}
 
 	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
+		// TODO: Arreglar. Esto no tiene la logica de apendear el el "0" o "1" al crear el codigo de barras. Hay que ver si se lo podemos agregar.
 		if (odt.getCodigo().endsWith("0")) {
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
 		}
