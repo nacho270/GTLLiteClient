@@ -10,16 +10,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
@@ -37,6 +37,7 @@ import ar.com.fwcommon.util.GuiUtil;
 import ar.com.fwcommon.util.StringUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
+import ar.com.textillevel.entidades.documentos.remito.PiezaRemito;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
@@ -55,6 +56,10 @@ public class JDialogEditarPiezasODT extends JDialog {
 	private JButton btnAceptar;
 	private JButton btnCancelar;
 	private FWJNumericTextField txtNroRemito;
+	
+	private FWJTextField txtTotalPiezasEntrada;
+	private FWJTextField txtTotalMetrosEntrada;
+	
 	private FWDateField txtFechaEmision;
 	private FWJTextField txtProducto;
 	private OrdenDeTrabajo odt;
@@ -67,11 +72,8 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 	private JPanel panelDatosCliente; 
 
-	private JTextField txtLocalidad;
-	private JTextField txtDireccion;
+	private JTextField txtNroCliente;
 	private JPanel panelDatosFactura;
-	private JMenu menuODT;
-	private Frame owner;
 	private boolean acepto;
 
 	public JDialogEditarPiezasODT(Frame owner, OrdenDeTrabajo odt) {
@@ -92,10 +94,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
 		getTxtProducto().setText(odt.getProductoArticulo().toString());
 		if(cliente.getDireccionReal() != null) {
-			getTxtDireccion().setText(cliente.getDireccionReal().getDireccion());
-			if(cliente.getDireccionReal().getLocalidad() != null) {
-				getTxtLocalidad().setText(cliente.getDireccionReal().getLocalidad().getNombreLocalidad());
-			}
+			getTxtNroCliente().setText(cliente.getNroCliente()+"");
 		}
 	}
 
@@ -110,9 +109,9 @@ public class JDialogEditarPiezasODT extends JDialog {
 		if(panTotales == null) {
 			panTotales = new JPanel();
 			panTotales.setLayout(new GridBagLayout());
-			panTotales.add(new JLabel(" PIEZAS:"), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panTotales.add(new JLabel("Total Piezas Salida:"), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panTotales.add(getTxtPiezas(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
-			panTotales.add(new JLabel(" METROS:"), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panTotales.add(new JLabel("Total Metros Salida:"), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panTotales.add(getTxtMetros(), GenericUtils.createGridBagConstraints(3, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
 		}
 		return panTotales;
@@ -122,9 +121,6 @@ public class JDialogEditarPiezasODT extends JDialog {
 		if(txtPiezas == null) {
 			txtPiezas = new JTextField();
 			txtPiezas.setEditable(false);
-			if(remitoEntrada.getId() != null) {
-				getTxtPiezas().setText(String.valueOf(remitoEntrada.getPiezas().size()));
-			}
 		}
 		return txtPiezas;
 	}
@@ -133,9 +129,6 @@ public class JDialogEditarPiezasODT extends JDialog {
 		if(txtMetros == null) {
 			txtMetros = new JTextField();
 			txtMetros.setEditable(false);
-			if(remitoEntrada.getId() != null) {
-				txtMetros.setText(remitoEntrada.getTotalMetros().toString());
-			}
 		}
 		return txtMetros;
 	}
@@ -149,7 +142,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 			panDetalle.add(getPanelDatosFactura(), GenericUtils.createGridBagConstraints(0, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 6, 1, 0, 0));
 
-			panDetalle.add(new JLabel(" ODT:"), GenericUtils.createGridBagConstraints(0, 2,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panDetalle.add(new JLabel("ODT:"), GenericUtils.createGridBagConstraints(0, 2,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panDetalle.add(getTxtProducto(), GenericUtils.createGridBagConstraints(1, 2, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
 
 			panDetalle.add(getPanTablaPieza(), GenericUtils.createGridBagConstraints(0, 3, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 6, 1, 1, 1));
@@ -165,30 +158,20 @@ public class JDialogEditarPiezasODT extends JDialog {
 			panelDatosCliente = new JPanel();
 			panelDatosCliente.setLayout(new GridBagLayout());
 			panelDatosCliente.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-			panelDatosCliente.add(new JLabel("Señor/es: "), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtRazonSocial(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 3, 1, 1, 0));
-			panelDatosCliente.add(new JLabel("Direccion: "), GenericUtils.createGridBagConstraints(0, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtDireccion(), GenericUtils.createGridBagConstraints(1, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
-			panelDatosCliente.add(new JLabel("Localidad: "), GenericUtils.createGridBagConstraints(2, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtLocalidad(), GenericUtils.createGridBagConstraints(3, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
+			panelDatosCliente.add(new JLabel("Cliente: "), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosCliente.add(getTxtRazonSocial(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.7, 0));
+			panelDatosCliente.add(new JLabel("Nro.: "), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosCliente.add(getTxtNroCliente(), GenericUtils.createGridBagConstraints(3, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.3, 0));
 		}
 		return panelDatosCliente;
 	}
 
-	private JTextField getTxtLocalidad() {
-		if(txtLocalidad == null) {
-			txtLocalidad = new JTextField();
-			txtLocalidad.setEditable(false);
+	private JTextField getTxtNroCliente() {
+		if(txtNroCliente == null) {
+			txtNroCliente = new JTextField();
+			txtNroCliente.setEditable(false);
 		}
-		return txtLocalidad;
-	}
-
-	private JTextField getTxtDireccion() {
-		if(txtDireccion == null) {
-			txtDireccion = new JTextField();
-			txtDireccion.setEditable(false);
-		}
-		return txtDireccion;
+		return txtNroCliente;
 	}
 
 	private JPanel getPanelDatosFactura() {
@@ -198,10 +181,37 @@ public class JDialogEditarPiezasODT extends JDialog {
 			panelDatosFactura.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 			panelDatosFactura.add(new JLabel("Remito Nº: "), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panelDatosFactura.add(getTxtNroRemito(), GenericUtils.createGridBagConstraints(1, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
-			panelDatosFactura.add(new JLabel(" FECHA:"), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosFactura.add(new JLabel("Fecha:"), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panelDatosFactura.add(getTxtFechaEmision(), GenericUtils.createGridBagConstraints(3, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
+			
+			panelDatosFactura.add(new JLabel("Total Piezas Entrada: "), GenericUtils.createGridBagConstraints(0, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosFactura.add(getTxtTotalPiezasEntrada(), GenericUtils.createGridBagConstraints(1, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
+			panelDatosFactura.add(new JLabel("Total Metros Entrada: "), GenericUtils.createGridBagConstraints(2, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosFactura.add(getTxtTotalMetrosEntrada(), GenericUtils.createGridBagConstraints(3, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
 		}
 		return panelDatosFactura;
+	}
+
+	private FWJTextField getTxtTotalPiezasEntrada() {
+		if(txtTotalPiezasEntrada == null) {
+			txtTotalPiezasEntrada = new FWJTextField();
+			txtTotalPiezasEntrada.setEditable(false);
+			if(remitoEntrada.getId() != null) {
+				txtTotalPiezasEntrada.setText(String.valueOf(remitoEntrada.getPiezas().size()));
+			}
+		}
+		return txtTotalPiezasEntrada;
+	}
+	
+	private FWJTextField getTxtTotalMetrosEntrada() {
+		if(txtTotalMetrosEntrada == null) {
+			txtTotalMetrosEntrada = new FWJTextField();
+			txtTotalMetrosEntrada.setEditable(false);
+			if(remitoEntrada.getId() != null) {
+				txtTotalMetrosEntrada.setText(String.valueOf(remitoEntrada.getTotalMetros()));
+			}
+		}
+		return txtTotalMetrosEntrada;
 	}
 
 	private FWJTextField getTxtProducto() {
@@ -306,44 +316,6 @@ public class JDialogEditarPiezasODT extends JDialog {
 		return panTablaPieza;
 	}
 
-	private class ODTSelectedAction implements Action {
-		
-		private OrdenDeTrabajo odt;
-		
-		public ODTSelectedAction(OrdenDeTrabajo odt) {
-			this.odt = odt;
-		}
-
-		public void addPropertyChangeListener(PropertyChangeListener listener) {
-		}
-
-		public Object getValue(String key) {
-			return null;
-		}
-
-		public boolean isEnabled() {
-			return true;
-		}
-
-		public void putValue(String key, Object value) {
-		}
-
-		public void removePropertyChangeListener(PropertyChangeListener listener) {
-		}
-
-		public void setEnabled(boolean b) {
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			
-		}
-
-		public String toString() {
-			return odt.toString();
-		}
-
-	}
-
 	public boolean isAceptpo() {
 		return acepto;
 	}
@@ -364,6 +336,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 			initializePopupMenu();
 			this.odt = odt;
 			agregarElementos(odt.getPiezas());
+			actualizarTotales();
 		}
 
 		public String validar() {
@@ -386,7 +359,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 		private Object[] getRow(PiezaODT elemento) {
 			String nroPieza = null;
-			nroPieza = elemento.getPiezaRemito().getOrdenPieza().toString();
+			nroPieza = elemento.getPiezaRemito().getOrdenPieza().toString() + (elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1));
 			Object[] row = new Object[CANT_COLS];
 			row[COL_NRO_PIEZA_ENT] = nroPieza;
 			row[COL_METROS_PIEZA_ENT] = elemento.getPiezaRemito().getMetros().toString();
@@ -399,10 +372,20 @@ public class JDialogEditarPiezasODT extends JDialog {
 			return row;
 		}
 
-		@SuppressWarnings("serial")
 		@Override
 		protected FWJTable construirTabla() {
+
 			FWJTable tablaPiezaEntrada = new FWJTable(0, CANT_COLS) {
+
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void newRowSelected(int newRow, int oldRow) {
+					boolean habilitarAgregar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() == null;
+					boolean habilitarEliminar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() != null;
+					getBotonAgregar().setEnabled(habilitarAgregar);
+					getBotonEliminar().setEnabled(habilitarEliminar);
+				}
 
 				@Override
 				public void cellEdited(int cell, int row) {
@@ -420,8 +403,11 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 			};
 			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 200, 200, true);
+			tablaPiezaEntrada.setAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 120, true);
-			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ODT, "METROS ODT", 120, false);
+			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ODT, "METROS SALIDA", 120, false);
+			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ODT, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
 
 			tablaPiezaEntrada.addMouseListener(new MouseAdapter() {
@@ -438,7 +424,11 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 				private void handleMouseEvent(MouseEvent e) {
 					if(e.isPopupTrigger()) {
-						getMenuItemEliminarFilas().setEnabled(getTabla().getSelectedRow() != -1);
+						int newRow = getTabla().getSelectedRow();
+						boolean habilitarAgregar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() == null;
+						boolean habilitarEliminar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() != null;
+						getMenuItemAgregarPiezas().setEnabled(habilitarAgregar);
+						getMenuItemEliminarFilas().setEnabled(habilitarEliminar);
 						getComponentPopupMenu().show(e.getComponent(), e.getX(), e.getY());
 					}
 				}
@@ -452,7 +442,6 @@ public class JDialogEditarPiezasODT extends JDialog {
 			setComponentPopupMenu(new JPopupMenu());
 			getComponentPopupMenu().add(getMenuItemAgregarPiezas());
 			getComponentPopupMenu().add(getMenuItemEliminarFilas());
-			getComponentPopupMenu().add(getMenuODT());
 		}
 
 		private JMenuItem getMenuItemEliminarFilas() {
@@ -506,35 +495,76 @@ public class JDialogEditarPiezasODT extends JDialog {
 
 		@Override
 		public boolean validarAgregar() {
+			boolean ok = false;
+			Integer cantSubpiezas = null;
+			do {
+				String input = JOptionPane.showInputDialog(JDialogEditarPiezasODT.this, "Ingrese la cantidad de sub piezas: ", "Agregar Sub piezas", JOptionPane.INFORMATION_MESSAGE);
+				if(input == null){
+					break;
+				}
+				if (input.trim().length()==0 || !GenericUtils.esNumerico(input)) {
+					FWJOptionPane.showErrorMessage(JDialogEditarPiezasODT.this, "Ingreso incorrecto", "error");
+				} else {
+					ok = true;
+					cantSubpiezas = Integer.valueOf(input);
+				}
+			} while (!ok);
+			if(ok) {
+				List<PiezaODT> allPiezasODT = odt.getPiezas();
+				int selectedRow = getTabla().getSelectedRow();
+				PiezaODT elemento = getElemento(selectedRow);
+				elemento.setMetros(elemento.getMetros().divide(new BigDecimal(cantSubpiezas)));
+				elemento.setOrdenSubpieza(0); //es la primera de las subpiezas!
+				List<PiezaODT> antesDeElemSelected = new ArrayList<>(allPiezasODT.subList(0, selectedRow));
+				List<PiezaODT> enElemSelected = new ArrayList<>(allPiezasODT.subList(selectedRow, selectedRow+1));
+				List<PiezaODT> despuesDeElemSelected = new ArrayList<>(allPiezasODT.subList(selectedRow+1, allPiezasODT.size()));
+				for(int i=0; i < cantSubpiezas-1; i++) {
+					PiezaODT pODT = new PiezaODT();
+					pODT.setPiezaRemito(elemento.getPiezaRemito());
+					pODT.setMetros(elemento.getMetros());
+					pODT.setOrdenSubpieza(i+1);
+					enElemSelected.add(pODT);
+				}
+				allPiezasODT.clear();
+				allPiezasODT.addAll(antesDeElemSelected);
+				allPiezasODT.addAll(enElemSelected);
+				allPiezasODT.addAll(despuesDeElemSelected);
+				limpiar();
+				agregarElementos(allPiezasODT);
+				actualizarTotales();
+			}
 			return false;
 		}
 
 		@Override
 		public boolean validarQuitar() {
-//			table2Objects();
-//			int[] selectedRows = getTabla().getSelectedRows();
-//			List<PiezaRemito> piezaRemitoList = new ArrayList<PiezaRemito>();
-//			for(int sr : selectedRows) {
-//				piezaRemitoList.add(getElemento(sr));
-//			}
-//			for(PiezaRemito elemento : piezaRemitoList) {
-//				remitoEntrada.getPiezas().remove(elemento);
-//
-//				for(OrdenDeTrabajo odt : odtPiezaMap.values()) {
-//					List<PiezaODT> podtToBorrarList = new ArrayList<PiezaODT>();
-//					for(PiezaODT podt : odt.getPiezas()) {
-//						if(podt.getPiezaRemito() != null && podt.getPiezaRemito().equals(elemento)) {
-//							podtToBorrarList.add(podt);
-//						}
-//					}
-//					odt.getPiezas().removeAll(podtToBorrarList);
-//				}
-//				
-//				odtPiezaMap.remove(elemento);
-//			}
-//			remitoEntrada.recalcularOrdenes();
-			//TODO:
+			int selectedRow = getTabla().getSelectedRow();
+			if(selectedRow != -1) {
+				PiezaODT piezaODT = getElemento(selectedRow);
+				PiezaRemito piezaEntrada = piezaODT.getPiezaRemito();
+				odt.getPiezas().remove(piezaODT);
+				List<PiezaODT> piezasHijas = getPiezasHijas(piezaEntrada);
+				if(piezasHijas.size() == 1) {
+					piezasHijas.get(0).setOrdenSubpieza(null);
+				} else {
+					for(int i=0; i < piezasHijas.size(); i++) {
+						piezasHijas.get(i).setOrdenSubpieza(i);
+					}
+				}
+				limpiar();
+				agregarElementos(odt.getPiezas());
+			}
 			return true;
+		}
+
+		private List<PiezaODT> getPiezasHijas(PiezaRemito piezaEntrada) {
+			List<PiezaODT> hijas = new ArrayList<>(); 
+			for(PiezaODT pODT : odt.getPiezas()) {
+				if(pODT.getPiezaRemito().equals(piezaEntrada)) {
+					hijas.add(pODT);
+				}
+			}
+			return hijas;
 		}
 
 		@Override
@@ -547,17 +577,6 @@ public class JDialogEditarPiezasODT extends JDialog {
 			return null;
 		}
 
-	}
-
-	private JMenu getMenuODT() {
-		if(menuODT == null) {
-			menuODT = new JMenu("ODTs");
-			ODTSelectedAction odtAction = new ODTSelectedAction(null);
-			JMenuItem menuItem = new JMenuItem(odtAction);
-			menuItem.setText("Crear ODT");
-			menuODT.add(menuItem);
-		}
-		return menuODT;
 	}
 
 }
