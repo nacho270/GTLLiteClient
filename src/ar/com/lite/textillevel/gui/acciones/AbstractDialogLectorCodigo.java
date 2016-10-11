@@ -21,9 +21,12 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.apache.taglibs.string.util.StringW;
+
 import ar.com.fwcommon.componentes.FWJNumericTextField;
 import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.util.GuiUtil;
+import ar.com.fwcommon.util.StringUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
 
 public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
@@ -137,6 +140,12 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	            		T obj = callback.buscar(txtCod.getText().trim());
 	            		if(obj == null) {
 	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código " + txtCod.getText().trim() + " es inexistente.", "Error");
+	                    	reset();
+	                        return;
+	            		}
+	            		String msgValidacion = callback.validar(obj);
+	            		if (!StringUtil.isNullOrEmptyString(msgValidacion)) {
+	            			FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, StringW.wordWrap(msgValidacion), "Error");
 	                    	reset();
 	                        return;
 	            		}
