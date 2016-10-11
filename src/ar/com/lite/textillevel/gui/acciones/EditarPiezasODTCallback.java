@@ -21,7 +21,7 @@ public class EditarPiezasODTCallback implements DialogLectorCodigoCallback<Orden
 
 	@Override
 	public void encontrado(OrdenDeTrabajo odt) {
-		JDialogEditarPiezasODT jDialogEditarPiezasODT = new JDialogEditarPiezasODT(owner, odt);
+		JDialogAsignarMetrosPiezasODT jDialogEditarPiezasODT = new JDialogAsignarMetrosPiezasODT(owner, odt);
 		GuiUtil.centrar(jDialogEditarPiezasODT);
 		jDialogEditarPiezasODT.setVisible(true);
 	}

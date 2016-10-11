@@ -43,7 +43,7 @@ import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 
-public class JDialogEditarPiezasODT extends JDialog {
+public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
@@ -76,7 +76,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 	private JPanel panelDatosFactura;
 	private boolean acepto;
 
-	public JDialogEditarPiezasODT(Frame owner, OrdenDeTrabajo odt) {
+	public JDialogAsignarMetrosPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
@@ -303,7 +303,7 @@ public class JDialogEditarPiezasODT extends JDialog {
 	private boolean validar() {
 		String msgValidacionPiezas = getPanTablaPieza().validar();
 		if(msgValidacionPiezas != null) {
-			FWJOptionPane.showErrorMessage(JDialogEditarPiezasODT.this, StringW.wordWrap(msgValidacionPiezas), "Error");
+			FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap(msgValidacionPiezas), "Error");
 			return false;
 		}
 		return true;
@@ -498,12 +498,12 @@ public class JDialogEditarPiezasODT extends JDialog {
 			boolean ok = false;
 			Integer cantSubpiezas = null;
 			do {
-				String input = JOptionPane.showInputDialog(JDialogEditarPiezasODT.this, "Ingrese la cantidad de sub piezas: ", "Agregar Sub piezas", JOptionPane.INFORMATION_MESSAGE);
+				String input = JOptionPane.showInputDialog(JDialogAsignarMetrosPiezasODT.this, "Ingrese la cantidad de sub piezas: ", "Agregar Sub piezas", JOptionPane.INFORMATION_MESSAGE);
 				if(input == null){
 					break;
 				}
 				if (input.trim().length()==0 || !GenericUtils.esNumerico(input)) {
-					FWJOptionPane.showErrorMessage(JDialogEditarPiezasODT.this, "Ingreso incorrecto", "error");
+					FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, "Ingreso incorrecto", "error");
 				} else {
 					ok = true;
 					cantSubpiezas = Integer.valueOf(input);

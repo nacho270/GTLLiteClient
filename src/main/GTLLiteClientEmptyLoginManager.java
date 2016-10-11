@@ -17,9 +17,8 @@ public class GTLLiteClientEmptyLoginManager extends EmptyLoginManager {
 	@Override
 	public List<Modulo> getModulosUsuario() throws FWException {
 		return Lists.newArrayList( //
-			new Modulo(1, "Lector", "main.acciones.VerLectorRemitoEntradaClienteAction", -1, true),
-			new Modulo(2, "Ordenador piezas remito entrada", "main.acciones.VerDialogoOrdenarPiezasODTAction", -1, true) ,
-			new Modulo(3, "Lector de ODT", "main.acciones.VerLectorODTAction", -1, true)
+			new Modulo(1, "Ordenar piezas ODT", "main.acciones.VerDialogoOrdenarPiezasODTAction", -1, true) ,
+			new Modulo(2, "Asignar metros piezas ODT", "main.acciones.VerLectorODTAction", -1, true)
 		);
 	}
 
