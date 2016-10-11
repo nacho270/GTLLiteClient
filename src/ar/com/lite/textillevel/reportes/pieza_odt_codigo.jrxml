@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pieza_odt_codigo" pageWidth="300" pageHeight="200" columnWidth="260" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<parameter name="IMAGEN" class="java.lang.Object"/>
+	<detail>
+		<band height="144" splitType="Stretch">
+			<image hAlign="Center">
+				<reportElement x="23" y="13" width="216" height="120"/>
+				<imageExpression class="java.awt.Image"><![CDATA[$P{IMAGEN}]]></imageExpression>
+			</image>
+		</band>
+	</detail>
+</jasperReport>

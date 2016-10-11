@@ -431,7 +431,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 				}
 
 				private void imprimir(PiezaODT pieza) {
-					System.out.println("Imprimiendo pieza " + pieza.getPiezaRemito().getOrdenPieza().toString());
+					new ImprimirCodigoPiezaODTHandler(pieza).imprimir();
 					mapaPiezasImpresas.put(pieza.getId(), true);
 				}
 			};
