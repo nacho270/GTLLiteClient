@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+
+<project name="GTL" default="sign" basedir="." >
+
+	<property name="client.jar.name" value="backgtllite-client.jar" />
+	<property name="keystore" value="C:/Temp/myKeys" />
+
+	<target name="sign" depends="create-client-jar-A" description="Firma ${client.jar.name}">
+		<signjar jar="${client.jar.name}" keystore="${keystore}" alias="jdc" storepass="qwerty"/>
+	</target>
+
+	<target name="create-client-jar-A" description="Crea ${client.jar.name} en la raíz del proyecto" >
+		<jar jarfile="${client.jar.name}" duplicate="preserve">
+			<fileset dir="bin">
+				<include name="ar/**" />
+				<include name="main/**" />
+				<include name="jndi.properties" />
+				<include name="organizacionMenues.xml" />
+			</fileset>
+
+			<fileset dir="resources">
+				<include name="JNLP-INF/**" />
+			</fileset>
+
+			<fileset dir="../FWCommon/bin">
+				<include name="ar/**" />
+				<include name="fwcommon.properties" />
+				<exclude name="**/*.hbm.xml" />
+			</fileset>
+
+			<fileset dir="../GTL/CoreGestionTextilLevel/bin">
+				<include name="ar/com/textillevel/entidades/**" />
+				<include name="ar/com/textillevel/facade/api/remote/**" />
+				<include name="ar/com/textillevel/util/**" />
+				<include name="ar/com/textillevel/modulos/chat/mensajes/**" />
+				<include name="ar/com/textillevel/modulos/personal/entidades/**" />
+				<include name="ar/com/textillevel/modulos/personal/utils/**" />
+				<include name="ar/com/textillevel/modulos/personal/enums/**" />
+				<include name="ar/com/textillevel/modulos/personal/facade/api/remote/**" />
+				
+				<include name="ar/com/textillevel/modulos/odt/entidades/**" />
+				<include name="ar/com/textillevel/modulos/odt/to/**" />
+				<include name="ar/com/textillevel/modulos/odt/enums/**" />
+				<include name="ar/com/textillevel/modulos/odt/util/**" />
+				<include name="ar/com/textillevel/modulos/odt/facade/api/remote/**" />
+				
+				<include name="ar/com/textillevel/modulos/alertas/facade/api/remote/**" />
+				<include name="ar/com/textillevel/modulos/alertas/enums/**" />
+				<include name="ar/com/textillevel/modulos/alertas/entidades/**" />
+				
+				<include name="ar/com/textillevel/modulos/fe/facade/api/remote/**" />
+				<include name="ar/com/textillevel/modulos/fe/to/**" />
+
+			</fileset>
+		</jar>
+	</target>
+
+</project>
