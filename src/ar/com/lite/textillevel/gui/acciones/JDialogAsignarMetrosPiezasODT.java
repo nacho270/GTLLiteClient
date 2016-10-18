@@ -42,6 +42,7 @@ import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
+import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
@@ -289,6 +290,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if(validar()) {
 						acepto = true;
+						odt.setEstadoODT(EEstadoODT.EN_OFICINA);
 						GTLLiteRemoteService.grabarPiezasODT(odt);
 						dispose();
 					}
@@ -359,7 +361,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private Object[] getRow(PiezaODT elemento) {
 			String nroPieza = null;
-			nroPieza = elemento.getPiezaRemito().getOrdenPieza().toString() + (elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1));
+			nroPieza = (elemento.getOrden() == null ? "" : elemento.getOrden()) + ((elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1)));
 			Object[] row = new Object[CANT_COLS];
 			row[COL_NRO_PIEZA_ENT] = nroPieza;
 			row[COL_METROS_PIEZA_ENT] = elemento.getPiezaRemito().getMetros().toString();

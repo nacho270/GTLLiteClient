@@ -5,7 +5,6 @@ import java.awt.Frame;
 import ar.com.fwcommon.util.GuiUtil;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
-import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 
 public class EditarPiezasODTCallback implements DialogLectorCodigoCallback<OrdenDeTrabajo> {
 
@@ -29,11 +28,9 @@ public class EditarPiezasODTCallback implements DialogLectorCodigoCallback<Orden
 
 	@Override
 	public String validar(OrdenDeTrabajo odt) {
-		EEstadoODT estadoODT = odt.getEstado();
-		if (estadoODT.ordinal() < EEstadoODT.EN_PROCESO.ordinal() || estadoODT.ordinal() > EEstadoODT.DETENIDA.ordinal()) {
+		if (!odt.puedeAsignarMetrosEnPiezas()) {
 			return "No se puede asignar metros a las piezas de esta ODT porque aun no se ha comenzado o bien ya se ha finalizado.";
 		}
-
 		return null;
 	}
 }

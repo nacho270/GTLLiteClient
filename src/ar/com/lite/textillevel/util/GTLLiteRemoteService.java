@@ -14,19 +14,26 @@ public class GTLLiteRemoteService {
 	private static GTLLiteOtroSistemaBeanFactory gtlBeanFactory2 = GTLLiteOtroSistemaBeanFactory.getInstance();
 
 	public static OrdenDeTrabajo getODTByCodigo(final String codigo) throws RemoteException {
-		// TODO: Arreglar. Esto no tiene la logica de apendear el el "0" o "1" al crear el codigo de barras. Hay que ver si se lo podemos agregar.
-		if (codigo.endsWith("0")) {
-			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
+		OrdenDeTrabajo odt = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
+		if(odt == null) {
+			return odt;
+		} else {//busco en el segundo
+			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
 		}
-		return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
 	}
 
 	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
-		// TODO: Arreglar. Esto no tiene la logica de apendear el el "0" o "1" al crear el codigo de barras. Hay que ver si se lo podemos agregar.
-		if (odt.getCodigo().endsWith("0")) {
+		//consulto en el primero
+		OrdenDeTrabajo odtCheck = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
+		if(odtCheck != null) {//estaba en el primero => grabo ahí
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
 		}
-		return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+		//consulto en el segundo
+		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
+		if(odtCheck != null) {//estaba en el segundo => grabo ahí
+			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+		}
+		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
 	}
 
 	public static class GTLLiteBeanFactory extends BeanFactoryRemoteAbstract {
