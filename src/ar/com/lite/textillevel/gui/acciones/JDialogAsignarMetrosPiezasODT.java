@@ -43,6 +43,7 @@ import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
+import edu.emory.mathcs.backport.java.util.Collections;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
@@ -337,6 +338,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
 			initializePopupMenu();
 			this.odt = odt;
+			Collections.sort(odt.getPiezas());
 			agregarElementos(odt.getPiezas());
 			actualizarTotales();
 		}
@@ -357,11 +359,12 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		protected void agregarElemento(PiezaODT elemento) {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
+			elemento.setOrden(getTabla().getRowCount()-1);
 		}
 
 		private Object[] getRow(PiezaODT elemento) {
 			String nroPieza = null;
-			nroPieza = (elemento.getOrden() == null ? "" : elemento.getOrden()) + ((elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1)));
+			nroPieza = elemento.getPiezaRemito().getOrdenPieza()+ ((elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1)));
 			Object[] row = new Object[CANT_COLS];
 			row[COL_NRO_PIEZA_ENT] = nroPieza;
 			row[COL_METROS_PIEZA_ENT] = elemento.getPiezaRemito().getMetros().toString();
@@ -404,7 +407,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				}
 
 			};
-			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 200, 200, true);
+			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "NRO. DE PIEZA ENTRADA", 200, 200, true);
 			tablaPiezaEntrada.setAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 120, true);
 			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);

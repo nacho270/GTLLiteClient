@@ -15,7 +15,7 @@ public class GTLLiteRemoteService {
 
 	public static OrdenDeTrabajo getODTByCodigo(final String codigo) throws RemoteException {
 		OrdenDeTrabajo odt = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
-		if(odt == null) {
+		if(odt != null) {
 			return odt;
 		} else {//busco en el segundo
 			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
