@@ -360,6 +360,9 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
 			elemento.setOrden(getTabla().getRowCount()-1);
+			if(elemento.tieneSalida()) {
+				getTabla().lockCell(getTabla().getRowCount()-1, COL_METROS_PIEZA_ODT);
+			}
 		}
 
 		private Object[] getRow(PiezaODT elemento) {
@@ -386,8 +389,9 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 				@Override
 				public void newRowSelected(int newRow, int oldRow) {
-					boolean habilitarAgregar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() == null;
-					boolean habilitarEliminar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() != null;
+					PiezaODT piezaODT = getElemento(newRow);
+					boolean habilitarAgregar = newRow != -1 && piezaODT.getOrdenSubpieza() == null && !piezaODT.tieneSalida();
+					boolean habilitarEliminar = newRow != -1 && piezaODT.getOrdenSubpieza() != null && !piezaODT.tieneSalida();
 					getBotonAgregar().setEnabled(habilitarAgregar);
 					getBotonEliminar().setEnabled(habilitarEliminar);
 				}
