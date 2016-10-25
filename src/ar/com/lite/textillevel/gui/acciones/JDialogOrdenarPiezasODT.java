@@ -8,8 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -35,9 +35,7 @@ import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public class JDialogOrdenarPiezasODT extends JDialog {
 
@@ -47,10 +45,12 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 	private JPanel panDetalle;
 	private FWJTextField txtRazonSocial;
+	private JTextField txtNroCliente;
 	private PanelTablaPieza panTablaPieza;
 	private JPanel pnlBotones;
 	private JButton btnAceptar;
 	private JButton btnCancelar;
+	private JButton btnImprimir;
 	private FWJNumericTextField txtNroRemito;
 	private FWDateField txtFechaEmision;
 	private FWJTextField txtProducto;
@@ -59,9 +59,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private JPanel panTotales;
 	private JTextField txtMetros;
 	private JTextField txtPiezas;
+	private FWJTextField txtTotalPiezasEntrada;
+	private FWJTextField txtTotalMetrosEntrada;
 	private JPanel panelDatosCliente;
-	private JTextField txtLocalidad;
-	private JTextField txtDireccion;
 	private JPanel panelDatosFactura;
 	private boolean acepto;
 
@@ -70,7 +70,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
 		setSize(new Dimension(630, 750));
-		setTitle("Ordenar piezas Orden De Trabajo");
+		setTitle("Cosido");
 		construct();
 		setDatos();
 		setModal(true);
@@ -83,10 +83,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
 		getTxtProducto().setText(odt.getProductoArticulo().toString());
 		if (cliente.getDireccionReal() != null) {
-			getTxtDireccion().setText(cliente.getDireccionReal().getDireccion());
-			if (cliente.getDireccionReal().getLocalidad() != null) {
-				getTxtLocalidad().setText(cliente.getDireccionReal().getLocalidad().getNombreLocalidad());
-			}
+			getTxtNroCliente().setText(cliente.getNroCliente()+"");
 		}
 	}
 
@@ -135,19 +132,13 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		if (panDetalle == null) {
 			panDetalle = new JPanel();
 			panDetalle.setLayout(new GridBagLayout());
-
 			panDetalle.add(getPanelDatosCliente(), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 6, 1, 0, 0));
-
 			panDetalle.add(getPanelDatosFactura(), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 6, 1, 0, 0));
-
 			panDetalle.add(new JLabel(" ODT:"), GenericUtils.createGridBagConstraints(0, 2, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panDetalle.add(getTxtProducto(), GenericUtils.createGridBagConstraints(1, 2, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
-
 			panDetalle.add(getPanTablaPieza(), GenericUtils.createGridBagConstraints(0, 3, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 6, 1, 1, 1));
 		}
-
 		GuiUtil.setEstadoPanel(panDetalle, true);
-
 		return panDetalle;
 	}
 
@@ -156,32 +147,22 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			panelDatosCliente = new JPanel();
 			panelDatosCliente.setLayout(new GridBagLayout());
 			panelDatosCliente.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
-			panelDatosCliente.add(new JLabel("Señor/es: "), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtRazonSocial(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 3, 1, 1, 0));
-			panelDatosCliente.add(new JLabel("Direccion: "), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtDireccion(), GenericUtils.createGridBagConstraints(1, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
-			panelDatosCliente.add(new JLabel("Localidad: "), GenericUtils.createGridBagConstraints(2, 1, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtLocalidad(), GenericUtils.createGridBagConstraints(3, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
+			panelDatosCliente.add(new JLabel("Cliente: "), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosCliente.add(getTxtRazonSocial(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.7, 0));
+			panelDatosCliente.add(new JLabel("Nro.: "), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosCliente.add(getTxtNroCliente(), GenericUtils.createGridBagConstraints(3, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.3, 0));
 		}
 		return panelDatosCliente;
 	}
 
-	private JTextField getTxtLocalidad() {
-		if (txtLocalidad == null) {
-			txtLocalidad = new JTextField();
-			txtLocalidad.setEditable(false);
+	private JTextField getTxtNroCliente() {
+		if(txtNroCliente == null) {
+			txtNroCliente = new JTextField();
+			txtNroCliente.setEditable(false);
 		}
-		return txtLocalidad;
+		return txtNroCliente;
 	}
-
-	private JTextField getTxtDireccion() {
-		if (txtDireccion == null) {
-			txtDireccion = new JTextField();
-			txtDireccion.setEditable(false);
-		}
-		return txtDireccion;
-	}
-
+	
 	private JPanel getPanelDatosFactura() {
 		if (panelDatosFactura == null) {
 			panelDatosFactura = new JPanel();
@@ -191,10 +172,38 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			panelDatosFactura.add(getTxtNroRemito(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
 			panelDatosFactura.add(new JLabel(" FECHA:"), GenericUtils.createGridBagConstraints(2, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 			panelDatosFactura.add(getTxtFechaEmision(), GenericUtils.createGridBagConstraints(3, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
+		
+			panelDatosFactura.add(new JLabel("Total Piezas Entrada: "), GenericUtils.createGridBagConstraints(0, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosFactura.add(getTxtTotalPiezasEntrada(), GenericUtils.createGridBagConstraints(1, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
+			panelDatosFactura.add(new JLabel("Total Metros Entrada: "), GenericUtils.createGridBagConstraints(2, 1,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panelDatosFactura.add(getTxtTotalMetrosEntrada(), GenericUtils.createGridBagConstraints(3, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
+
 		}
 		return panelDatosFactura;
 	}
 
+	private FWJTextField getTxtTotalPiezasEntrada() {
+		if(txtTotalPiezasEntrada == null) {
+			txtTotalPiezasEntrada = new FWJTextField();
+			txtTotalPiezasEntrada.setEditable(false);
+			if(remitoEntrada.getId() != null) {
+				txtTotalPiezasEntrada.setText(String.valueOf(remitoEntrada.getPiezas().size()));
+			}
+		}
+		return txtTotalPiezasEntrada;
+	}
+	
+	private FWJTextField getTxtTotalMetrosEntrada() {
+		if(txtTotalMetrosEntrada == null) {
+			txtTotalMetrosEntrada = new FWJTextField();
+			txtTotalMetrosEntrada.setEditable(false);
+			if(remitoEntrada.getId() != null) {
+				txtTotalMetrosEntrada.setText(String.valueOf(remitoEntrada.getTotalMetros()));
+			}
+		}
+		return txtTotalMetrosEntrada;
+	}
+	
 	private FWJTextField getTxtProducto() {
 		if (txtProducto == null) {
 			txtProducto = new FWJTextField();
@@ -239,7 +248,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			pnlBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pnlBotones.add(getBtnAceptar());
 			pnlBotones.add(getBtnCancelar());
+			pnlBotones.add(getBtnImprimir());
 			getBtnCancelar().setEnabled(true);
+			getBtnImprimir().setVisible(this.odt.getPiezas().get(0).getOrden() != null);
 		}
 		return pnlBotones;
 	}
@@ -249,16 +260,10 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			btnCancelar = new JButton("Cancelar");
 			btnCancelar.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					boolean hayPiezasImpresas = getPanTablaPieza().hayPiezasImpresas();
-					if (!hayPiezasImpresas) {
+					int respuesta = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("Ya se han impreso piezas, si cierra la ventana los datos ingresados no seran guardados. Desea continuar"), "Pregunta");
+					if (respuesta == FWJOptionPane.YES_OPTION) {
 						acepto = false;
 						dispose();
-					} else {
-						int respuesta = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("Ya se han impreso piezas, si cierra la ventana los datos ingresados no seran guardados. Desea continuar"), "Pregunta");
-						if (respuesta == FWJOptionPane.YES_OPTION) {
-							acepto = false;
-							dispose();
-						}
 					}
 				}
 			});
@@ -275,15 +280,34 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					if (validar()) {
 						acepto = true;
 						GTLLiteRemoteService.grabarPiezasODT(odt);
+						imprimir();
 						dispose();
 					}
 					return;
 				}
+
 			});
 		}
 		return btnAceptar;
 	}
 
+	private void imprimir() {
+		
+	}
+
+	private JButton getBtnImprimir() {
+		if (btnImprimir == null) {
+			btnImprimir = new JButton("Imprimir");
+			btnImprimir.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					imprimir();
+				}
+			});
+		}
+		return btnImprimir;
+	}
+	
 	private boolean validar() {
 		String msgValidacionPiezas = getPanTablaPieza().validar();
 		if (msgValidacionPiezas != null) {
@@ -314,48 +338,31 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		private static final int COL_ORDEN = 2;
 		private static final int COL_OBJ = 3;
 
-		private boolean reversed = false;
-		private Map<Integer, Boolean> mapaPiezasImpresas = Maps.newHashMap();
-
-		private JButton btnRevertir;
-
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
 			agregarElementos(odt.getPiezas());
 			getBotonAgregar().setVisible(false);
 			getBotonEliminar().setVisible(false);
-			agregarBoton(getBtnRevertir());
-		}
-
-		public JButton getBtnRevertir() {
-			if (btnRevertir == null) {
-				btnRevertir = new JButton("Revertir");
-				btnRevertir.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						limpiar();
-						if (reversed) {
-							agregarElementos(odt.getPiezas());
-						} else {
-							List<PiezaODT> piezas = Lists.reverse(odt.getPiezas());
-							agregarElementos(piezas);
-						}
-						reversed = !reversed;
-					}
-				});
-			}
-			return btnRevertir;
-		}
-
-		public boolean hayPiezasImpresas() {
-			return !mapaPiezasImpresas.isEmpty();
 		}
 
 		public String validar() {
 			String ret = null;
+			List<Integer> ordenes = Lists.newArrayList();
 			for (int i = 0; i < getTabla().getRowCount(); i++) {
 				String orden = (String) getTabla().getValueAt(i, COL_ORDEN);
 				if (orden == null || orden.equals("0")) {
-					ret = "Falta cargar el orden en algunas piezas";
-					break;
+					return "Falta cargar el orden en algunas piezas";
+				}
+				ordenes.add(Integer.valueOf(orden));
+			}
+			Collections.sort(ordenes);
+			if (!ordenes.get(0).equals(1)) {
+				return "Los ordenes deben comenzar en 1.";
+			}
+			for(int i = 0; i<ordenes.size() -1;i++) {
+				Integer orden = ordenes.get(i);
+				Integer ordenSiguiente = ordenes.get(i+1);
+				if(!(orden + 1 == ordenSiguiente)) {
+					return "Los ordenes deben ser consecutivos. Se ha encontrado un salto entre " + orden + " y " + ordenSiguiente;
 				}
 			}
 			return ret;
@@ -406,15 +413,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						}
 						PiezaODT piezaODT = getElemento(row);
 						piezaODT.setOrden(orden);
-						boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.getId())).or(false).booleanValue();
-						if (piezaImpresa == false) {
-							imprimir(piezaODT);
-						} else {
-							int respuesta = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("La pieza Nro " + piezaODT.getPiezaRemito().getOrdenPieza().toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
-							if (respuesta == FWJOptionPane.YES_OPTION) {
-								imprimir(piezaODT);
-							}
-						}
 					}
 				}
 
@@ -427,12 +425,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					}
 					PiezaODT pieza = getElemento(row);
 					pieza.setOrden(null);
-					mapaPiezasImpresas.put(pieza.getId(), false);
-				}
-
-				private void imprimir(PiezaODT pieza) {
-					new ImprimirCodigoPiezaODTHandler(pieza).imprimir();
-					mapaPiezasImpresas.put(pieza.getId(), true);
 				}
 			};
 			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 150, 150, true);

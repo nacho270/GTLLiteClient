@@ -2,7 +2,7 @@
 <menues>
 	<GrupoModulos nombre="Módulos" esDefault="true">
 		<listaModulos>
-				<newItem class="main.acciones.VerDialogoOrdenarPiezasODTAction" nombre="Ordenar piezas ODT" id="1" action="true"/>
+				<newItem class="main.acciones.VerDialogoOrdenarPiezasODTAction" nombre="Cosido" id="1" action="true"/>
 				<newItem class="main.acciones.VerLectorODTAction" nombre="Asignar metros piezas ODT" id="2" action="true"/>
 		</listaModulos>
 	</GrupoModulos>
