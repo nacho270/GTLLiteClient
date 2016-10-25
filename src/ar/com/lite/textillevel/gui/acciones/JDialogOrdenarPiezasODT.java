@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -64,6 +65,8 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private JPanel panelDatosCliente;
 	private JPanel panelDatosFactura;
 	private boolean acepto;
+	
+	private boolean estadoModificado = false;
 
 	public JDialogOrdenarPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
@@ -251,6 +254,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			pnlBotones.add(getBtnImprimir());
 			getBtnCancelar().setEnabled(true);
 			getBtnImprimir().setVisible(this.odt.getPiezas().get(0).getOrden() != null);
+			getBtnAceptar().setVisible(this.odt.getPiezas().get(0).getOrden() == null);
 		}
 		return pnlBotones;
 	}
@@ -279,8 +283,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if (validar()) {
 						acepto = true;
-						GTLLiteRemoteService.grabarPiezasODT(odt);
-						imprimir();
+						grabarEImprimir();
 						dispose();
 					}
 					return;
@@ -291,8 +294,12 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		return btnAceptar;
 	}
 
-	private void imprimir() {
-		
+	private void grabarEImprimir() {
+		if (estadoModificado) {
+			GTLLiteRemoteService.grabarPiezasODT(odt);
+			estadoModificado = false;
+		}
+		new ImpresionODTHandler(odt, this).imprimir();
 	}
 
 	private JButton getBtnImprimir() {
@@ -301,7 +308,13 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			btnImprimir.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					imprimir();
+					if (estadoModificado) {
+						int resp = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("Ha modificado el orden de las piezas. El mismo sera grabado antes de imprimir. Desea continuar?"), "Pregunta");
+						if (resp == FWJOptionPane.NO_OPTION) {
+							return;
+						}
+					}
+					grabarEImprimir();
 				}
 			});
 		}
@@ -339,6 +352,14 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		private static final int COL_OBJ = 3;
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
+			Collections.sort(odt.getPiezas(), new Comparator<PiezaODT>() {
+				public int compare(PiezaODT o1, PiezaODT o2) {
+					if (o1.getOrden() == null || o2.getOrden() == null) {
+						return o1.getPiezaRemito().getOrdenPieza().compareTo(o2.getPiezaRemito().getOrdenPieza());
+					}
+					return o1.getOrden().compareTo(o2.getOrden());
+				}
+			});
 			agregarElementos(odt.getPiezas());
 			getBotonAgregar().setVisible(false);
 			getBotonEliminar().setVisible(false);
@@ -348,11 +369,20 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			String ret = null;
 			List<Integer> ordenes = Lists.newArrayList();
 			for (int i = 0; i < getTabla().getRowCount(); i++) {
-				String orden = (String) getTabla().getValueAt(i, COL_ORDEN);
-				if (orden == null || orden.equals("0")) {
-					return "Falta cargar el orden en algunas piezas";
+				Object valueAt = getTabla().getValueAt(i, COL_ORDEN);
+				if (valueAt instanceof String) {
+					String orden = (String) valueAt;
+					if (orden == null || orden.equals("0")) {
+						return "Falta cargar el orden en algunas piezas";
+					}
+					ordenes.add(Integer.valueOf(orden));
+				} else {
+					Integer orden = (Integer) valueAt;
+					if (orden == null || orden.equals(0)) {
+						return "Falta cargar el orden en algunas piezas";
+					}
+					ordenes.add(orden);
 				}
-				ordenes.add(Integer.valueOf(orden));
 			}
 			Collections.sort(ordenes);
 			if (!ordenes.get(0).equals(1)) {
@@ -403,6 +433,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 							}
 						}
 						if (orden <= 0) {
+							estadoModificado = true;
 							blanquearCelda(cell, row);
 							return;
 						}
@@ -413,6 +444,18 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						}
 						PiezaODT piezaODT = getElemento(row);
 						piezaODT.setOrden(orden);
+						odt.getPiezas().set(row, piezaODT);
+						estadoModificado = true;
+						limpiar();
+						Collections.sort(odt.getPiezas(), new Comparator<PiezaODT>() {
+							public int compare(PiezaODT o1, PiezaODT o2) {
+								if (o1.getOrden() == null || o2.getOrden() == null) {
+									return o1.getPiezaRemito().getOrdenPieza().compareTo(o2.getPiezaRemito().getOrdenPieza());
+								}
+								return o1.getOrden().compareTo(o2.getOrden());
+							}
+						});
+						agregarElementos(odt.getPiezas());
 					}
 				}
 
