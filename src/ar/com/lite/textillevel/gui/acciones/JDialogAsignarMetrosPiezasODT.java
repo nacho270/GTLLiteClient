@@ -11,8 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -33,26 +33,26 @@ import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.componentes.FWJTable;
 import ar.com.fwcommon.componentes.FWJTextField;
 import ar.com.fwcommon.componentes.PanelTabla;
-import ar.com.fwcommon.util.GuiUtil;
 import ar.com.fwcommon.util.StringUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
-import ar.com.textillevel.entidades.documentos.remito.PiezaRemito;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 import edu.emory.mathcs.backport.java.util.Collections;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final int MAX_LONGITUD_RAZ_SOCIAL = 50;
-
 	private JPanel panDetalle;
-	private FWJTextField txtRazonSocial;
 	private PanelTablaPieza panTablaPieza;
 	private JPanel pnlBotones;
 	private JButton btnAceptar;
@@ -77,6 +77,9 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	private JTextField txtNroCliente;
 	private JPanel panelDatosFactura;
 	private boolean acepto;
+	
+	private static final String TEXTO_DIVIDIR="Dividir";
+	private static final String TEXTO_AGREGAR_SUBPIEZA="Agregar";
 
 	public JDialogAsignarMetrosPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
@@ -92,7 +95,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	private void setDatos() {
 		remitoEntrada.getProductoArticuloList().clear();
 		Cliente cliente = remitoEntrada.getCliente();
-		getTxtRazonSocial().setText(cliente.getRazonSocial());
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
 		getTxtProducto().setText(odt.getProductoArticulo().toString());
 		if(cliente.getDireccionReal() != null) {
@@ -150,8 +152,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			panDetalle.add(getPanTablaPieza(), GenericUtils.createGridBagConstraints(0, 3, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 6, 1, 1, 1));
 		}
 	
-		GuiUtil.setEstadoPanel(panDetalle, true);
-
 		return panDetalle;
 	}
 
@@ -161,9 +161,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			panelDatosCliente.setLayout(new GridBagLayout());
 			panelDatosCliente.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
 			panelDatosCliente.add(new JLabel("Cliente: "), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtRazonSocial(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.7, 0));
-			panelDatosCliente.add(new JLabel("Nro.: "), GenericUtils.createGridBagConstraints(2, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panelDatosCliente.add(getTxtNroCliente(), GenericUtils.createGridBagConstraints(3, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.3, 0));
+			panelDatosCliente.add(getTxtNroCliente(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
 		}
 		return panelDatosCliente;
 	}
@@ -246,14 +244,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		return txtNroRemito;
 	}
 
-	private FWJTextField getTxtRazonSocial() {
-		if(txtRazonSocial == null) {
-			txtRazonSocial = new FWJTextField(MAX_LONGITUD_RAZ_SOCIAL);
-			txtRazonSocial.setEditable(false);
-		}
-		return txtRazonSocial;
-	}
-
 	private JPanel getPanelBotones() {
 		if(pnlBotones == null){
 			pnlBotones = new JPanel();
@@ -266,15 +256,23 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		return pnlBotones;
 	}
 
-	
 	private JButton getBtnCancelar() {
 		if(btnCancelar == null) {
 			btnCancelar = new JButton("Cancelar");
 			btnCancelar.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					acepto = false;
-					dispose();
+					boolean hayPiezasImpresas = getPanTablaPieza().hayPiezasImpresas();
+					if (!hayPiezasImpresas) {
+						acepto = false;
+						dispose();
+					} else {
+						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("Ya se han impreso piezas, si cierra la ventana los datos ingresados no seran guardados. Desea continuar"), "Pregunta");
+						if (respuesta == FWJOptionPane.YES_OPTION) {
+							acepto = false;
+							dispose();
+						}
+					}
 				}
 
 			});
@@ -328,15 +326,26 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		private static final long serialVersionUID = 1L;
 
 		private static final int CANT_COLS = 4;
-		private static final int COL_NRO_PIEZA_ENT = 0;
+		private static final int COL_NRO_ORDEN_PIEZA_ODT = 0;
 		private static final int COL_METROS_PIEZA_ENT = 1;
 		private static final int COL_METROS_PIEZA_ODT = 2;
 		private static final int COL_OBJ = 3;
 
 		private OrdenDeTrabajo odt;
+		private boolean reversed = false;		
+		private JButton btnRevertir;
+		private JButton btnDividir;
+		private JButton btnEliminarPiezas;
+		
+		private Map<Integer, Boolean> mapaPiezasImpresas = Maps.newHashMap();
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
 			initializePopupMenu();
+			getBotonAgregar().setVisible(false);
+			getBotonEliminar().setVisible(false);
+			agregarBoton(getBtnDividir());
+			agregarBoton(getBtnEliminarPieza());
+			agregarBoton(getBtnRevertir());
 			this.odt = odt;
 			Collections.sort(odt.getPiezas());
 			agregarElementos(odt.getPiezas());
@@ -359,7 +368,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		protected void agregarElemento(PiezaODT elemento) {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
-			elemento.setOrden(getTabla().getRowCount()-1);
 			if(elemento.tieneSalida()) {
 				getTabla().lockCell(getTabla().getRowCount()-1, COL_METROS_PIEZA_ODT);
 			}
@@ -367,15 +375,15 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private Object[] getRow(PiezaODT elemento) {
 			String nroPieza = null;
-			nroPieza = elemento.getPiezaRemito().getOrdenPieza()+ ((elemento.getOrdenSubpieza() == null ? "" : " / " + (elemento.getOrdenSubpieza()+1)));
-			Object[] row = new Object[CANT_COLS];
-			row[COL_NRO_PIEZA_ENT] = nroPieza;
-			row[COL_METROS_PIEZA_ENT] = elemento.getPiezaRemito().getMetros().toString();
-			//sugiero los metros de la pieza de entrada
-			if(elemento.getMetros() == null) {
-				elemento.setMetros(elemento.getPiezaRemito().getMetros());
+			if(elemento.getOrdenSubpieza() == null) {
+				nroPieza = elemento.getOrden()+"";
+			} else {
+				nroPieza = elemento.getOrden() + " / " + (elemento.getOrdenSubpieza()+1);
 			}
-			row[COL_METROS_PIEZA_ODT] = elemento.getMetros().toString(); 
+			Object[] row = new Object[CANT_COLS];
+			row[COL_NRO_ORDEN_PIEZA_ODT] = nroPieza;
+			row[COL_METROS_PIEZA_ENT] = elemento.getOrdenSubpieza() == null ||  elemento.getOrdenSubpieza().intValue() == 0 ?  elemento.getPiezaRemito().getMetros().toString() : "";
+			row[COL_METROS_PIEZA_ODT] = elemento.getMetros() == null ? null : elemento.getMetros().toString(); 
 			row[COL_OBJ] = elemento;
 			return row;
 		}
@@ -389,35 +397,62 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 				@Override
 				public void newRowSelected(int newRow, int oldRow) {
-					PiezaODT piezaODT = getElemento(newRow);
-					boolean habilitarAgregar = newRow != -1 && piezaODT.getOrdenSubpieza() == null && !piezaODT.tieneSalida();
-					boolean habilitarEliminar = newRow != -1 && piezaODT.getOrdenSubpieza() != null && !piezaODT.tieneSalida();
-					getBotonAgregar().setEnabled(habilitarAgregar);
-					getBotonEliminar().setEnabled(habilitarEliminar);
+					if(newRow != -1) {
+						PiezaODT piezaODT = getElemento(newRow);
+						boolean habilitarAgregar = newRow != -1 && piezaODT.getOrdenSubpieza() == null && !piezaODT.tieneSalida();
+						boolean habilitarEliminar = newRow != -1 && piezaODT.getOrdenSubpieza() != null && !piezaODT.tieneSalida();
+						getBtnEliminarPieza().setEnabled(habilitarEliminar);
+						if(habilitarEliminar && !habilitarAgregar) {//es una subpieza!
+							getBtnDividir().setText(TEXTO_AGREGAR_SUBPIEZA);
+						} else {
+							getBtnDividir().setText(TEXTO_DIVIDIR);
+						}
+						getBtnDividir().setEnabled(true);
+					} else {
+						getBtnDividir().setEnabled(false);
+						getBtnEliminarPieza().setEnabled(false);
+						getBtnDividir().setText(TEXTO_DIVIDIR);						
+					}
 				}
 
 				@Override
 				public void cellEdited(int cell, int row) {
 					if(cell == COL_METROS_PIEZA_ODT) {
 						String metrosStr = (String)getTabla().getValueAt(row, COL_METROS_PIEZA_ODT);
-						PiezaODT elemento = getElemento(row);
-						if(!StringUtil.isNullOrEmpty(metrosStr)) {
-							elemento.setMetros(new BigDecimal(metrosStr));
+						PiezaODT piezaODT = getElemento(row);
+						if(!StringUtil.isNullOrEmpty(metrosStr) && !metrosStr.equals("0")) {
+							piezaODT.setMetros(new BigDecimal(metrosStr));
+							boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.getId())).or(false).booleanValue();
+							if (piezaImpresa) {
+								int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("La pieza Nro. " + piezaODT.getOrden().toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
+								if (respuesta == FWJOptionPane.YES_OPTION) {
+									imprimir(piezaODT);
+								}
+							} else {
+								imprimir(piezaODT);
+							}
 						} else {
-							elemento.setMetros(new BigDecimal(0));
+							piezaODT.setMetros(new BigDecimal(0));
 						}
+						
 						actualizarTotales();
 					}
 				}
 
+				private void imprimir(PiezaODT pieza) {
+					new ImprimirCodigoPiezaODTHandler(pieza).imprimir();
+					mapaPiezasImpresas.put(pieza.getId(), true);
+				}
+
 			};
-			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "NRO. DE PIEZA ENTRADA", 200, 200, true);
-			tablaPiezaEntrada.setAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 120, true);
+			tablaPiezaEntrada.setStringColumn(COL_NRO_ORDEN_PIEZA_ODT, "NRO. DE PIEZA ODT", 120, 120, true);
+			tablaPiezaEntrada.setAlignment(COL_NRO_ORDEN_PIEZA_ODT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENTRADA", 100, true);
 			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ODT, "METROS SALIDA", 120, false);
+			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ODT, "METROS SALIDA", 100, false);
 			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ODT, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
+			tablaPiezaEntrada.setSelectionMode(FWJTable.SINGLE_SELECTION);
 
 			tablaPiezaEntrada.addMouseListener(new MouseAdapter() {
 
@@ -455,10 +490,10 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private JMenuItem getMenuItemEliminarFilas() {
 			if(menuItemEliminarFilas == null) {
-				menuItemEliminarFilas = new JMenuItem("Eliminar Fila(s)");
+				menuItemEliminarFilas = new JMenuItem("Borrar Pieza");
 				menuItemEliminarFilas.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						getBotonEliminar().doClick();
+						getBtnEliminarPieza().doClick();
 					}
 				});
 			}
@@ -467,10 +502,10 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private JMenuItem getMenuItemAgregarPiezas() {
 			if(menuItemAgregarPiezas == null) {
-				menuItemAgregarPiezas = new JMenuItem("Agregar Pieza(s)");
+				menuItemAgregarPiezas = new JMenuItem("Dividir");
 				menuItemAgregarPiezas.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						getBotonAgregar().doClick();
+						getBtnDividir().doClick();
 					}
 				});
 			}
@@ -481,9 +516,11 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			BigDecimal tm = new BigDecimal(0);
 			int piezas = 0;
 			for(PiezaODT pe : odt.getPiezas()) {
-				tm = tm.add(pe.getMetros());
-				if(piezaValida(pe)) {
-					piezas++;
+				if(pe.getMetros() != null) {
+					tm = tm.add(pe.getMetros());
+					if(piezaValida(pe)) {
+						piezas++;
+					}
 				}
 			}
 			getTxtMetros().setText(tm.toString());
@@ -497,83 +534,16 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		@Override
 		protected void botonQuitarPresionado() {
-			getTabla().setNumRows(0);
-			agregarElementos(odt.getPiezas());
-			actualizarTotales();
 		}
 
 		@Override
 		public boolean validarAgregar() {
-			boolean ok = false;
-			Integer cantSubpiezas = null;
-			do {
-				String input = JOptionPane.showInputDialog(JDialogAsignarMetrosPiezasODT.this, "Ingrese la cantidad de sub piezas: ", "Agregar Sub piezas", JOptionPane.INFORMATION_MESSAGE);
-				if(input == null){
-					break;
-				}
-				if (input.trim().length()==0 || !GenericUtils.esNumerico(input)) {
-					FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, "Ingreso incorrecto", "error");
-				} else {
-					ok = true;
-					cantSubpiezas = Integer.valueOf(input);
-				}
-			} while (!ok);
-			if(ok) {
-				List<PiezaODT> allPiezasODT = odt.getPiezas();
-				int selectedRow = getTabla().getSelectedRow();
-				PiezaODT elemento = getElemento(selectedRow);
-				elemento.setMetros(elemento.getMetros().divide(new BigDecimal(cantSubpiezas)));
-				elemento.setOrdenSubpieza(0); //es la primera de las subpiezas!
-				List<PiezaODT> antesDeElemSelected = new ArrayList<>(allPiezasODT.subList(0, selectedRow));
-				List<PiezaODT> enElemSelected = new ArrayList<>(allPiezasODT.subList(selectedRow, selectedRow+1));
-				List<PiezaODT> despuesDeElemSelected = new ArrayList<>(allPiezasODT.subList(selectedRow+1, allPiezasODT.size()));
-				for(int i=0; i < cantSubpiezas-1; i++) {
-					PiezaODT pODT = new PiezaODT();
-					pODT.setPiezaRemito(elemento.getPiezaRemito());
-					pODT.setMetros(elemento.getMetros());
-					pODT.setOrdenSubpieza(i+1);
-					enElemSelected.add(pODT);
-				}
-				allPiezasODT.clear();
-				allPiezasODT.addAll(antesDeElemSelected);
-				allPiezasODT.addAll(enElemSelected);
-				allPiezasODT.addAll(despuesDeElemSelected);
-				limpiar();
-				agregarElementos(allPiezasODT);
-				actualizarTotales();
-			}
 			return false;
 		}
 
 		@Override
 		public boolean validarQuitar() {
-			int selectedRow = getTabla().getSelectedRow();
-			if(selectedRow != -1) {
-				PiezaODT piezaODT = getElemento(selectedRow);
-				PiezaRemito piezaEntrada = piezaODT.getPiezaRemito();
-				odt.getPiezas().remove(piezaODT);
-				List<PiezaODT> piezasHijas = getPiezasHijas(piezaEntrada);
-				if(piezasHijas.size() == 1) {
-					piezasHijas.get(0).setOrdenSubpieza(null);
-				} else {
-					for(int i=0; i < piezasHijas.size(); i++) {
-						piezasHijas.get(i).setOrdenSubpieza(i);
-					}
-				}
-				limpiar();
-				agregarElementos(odt.getPiezas());
-			}
-			return true;
-		}
-
-		private List<PiezaODT> getPiezasHijas(PiezaRemito piezaEntrada) {
-			List<PiezaODT> hijas = new ArrayList<>(); 
-			for(PiezaODT pODT : odt.getPiezas()) {
-				if(pODT.getPiezaRemito().equals(piezaEntrada)) {
-					hijas.add(pODT);
-				}
-			}
-			return hijas;
+			return false;
 		}
 
 		@Override
@@ -584,6 +554,147 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		@Override
 		protected String validarElemento(int fila) {
 			return null;
+		}
+
+		private JButton getBtnEliminarPieza() {
+			if(btnEliminarPiezas == null) {
+				btnEliminarPiezas = new JButton("Borrar Piezas");
+				btnEliminarPiezas.setEnabled(false);
+				btnEliminarPiezas.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						int selectedRow = getTabla().getSelectedRow();
+						if(selectedRow != -1) {
+							PiezaODT piezaODT = getElemento(selectedRow);
+							odt.getPiezas().remove(piezaODT);
+							getTabla().removeRow(selectedRow);
+							ajustarSubordenes(piezaODT.getOrden());
+							actualizarTotales();
+						}
+					}
+
+				});
+				
+			}
+			return btnEliminarPiezas;
+		}
+		
+		private JButton getBtnDividir() {
+			if(btnDividir == null) {
+				btnDividir = new JButton(TEXTO_DIVIDIR);
+				btnDividir.setEnabled(false);
+				btnDividir.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						if(getBtnDividir().getText().equals(TEXTO_DIVIDIR)) {
+							boolean ok = false;
+							Integer cantSubpiezas = null;
+							do {
+								String input = JOptionPane.showInputDialog(JDialogAsignarMetrosPiezasODT.this, "Ingrese la cantidad de sub piezas: ", "Agregar Sub piezas", JOptionPane.INFORMATION_MESSAGE);
+								if(input == null){
+									break;
+								}
+								if (input.trim().length()==0 || !GenericUtils.esNumerico(input)) {
+									FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, "Ingreso incorrecto", "error");
+								} else {
+									ok = true;
+									cantSubpiezas = Integer.valueOf(input);
+								}
+							} while (!ok);
+							if(ok) {
+								agregarSubpiezas(getTabla().getSelectedRow(), cantSubpiezas);
+							}
+						} else {
+							agregarSubpiezas(getTabla().getSelectedRow(), 2);
+						}
+					}
+
+					private void agregarSubpiezas(int rowToSplit, Integer cantSubpiezas) {
+						Collections.sort(odt.getPiezas());
+						Integer allPiezasSizeOriginal = odt.getPiezas().size();
+						PiezaODT elemento = getElemento(rowToSplit);
+						//seteo los datos de subpieza solo si la acción es "DIVIDIR" i.e. está habilitada sobre una piezaODT que NO es una subpieza 
+						if(elemento.getOrdenSubpieza() == null) {
+							elemento.setOrdenSubpieza(0);
+							getTabla().setValueAt(elemento.getOrden() + " / " + 1, rowToSplit, COL_NRO_ORDEN_PIEZA_ODT);
+						}
+						for(int i=0; i<allPiezasSizeOriginal; i++) {
+							if(i == rowToSplit) {
+								for(int j=0; j < cantSubpiezas-1; j++) {
+									PiezaODT pODT = new PiezaODT();
+									pODT.setPiezaRemito(elemento.getPiezaRemito());
+									pODT.setOrden(elemento.getOrden());
+									pODT.setOrdenSubpieza(j+1);
+									odt.getPiezas().add(i+j+1, pODT);
+									getTabla().insertRow(i+j+1, getRow(pODT));
+								}
+							}
+						}
+						ajustarSubordenes(elemento.getOrden());
+						
+						actualizarTotales();
+					}
+
+				});
+			}
+			return btnDividir;
+		}
+
+		private void ajustarSubordenes(Integer orden) {
+			for(int i=0; i<odt.getPiezas().size(); i++) {
+				PiezaODT pODT = odt.getPiezas().get(i);
+				if(pODT.getOrden().equals(orden)) {
+					int cantAjustes=0;
+					for(int j=i; pODT != null && pODT.getOrdenSubpieza() != null && pODT.getOrden().equals(orden) && j<odt.getPiezas().size(); j++) {
+						pODT.setOrdenSubpieza(j-i);
+						getTabla().setValueAt(pODT.getOrden() + " / " + (pODT.getOrdenSubpieza()+1), j, COL_NRO_ORDEN_PIEZA_ODT);
+						if(pODT.getOrdenSubpieza() == 0) {
+							getTabla().setValueAt(pODT.getPiezaRemito().getMetros(), i, COL_METROS_PIEZA_ENT);
+						}
+						cantAjustes++;
+						if(j+1 < odt.getPiezas().size()) {
+							pODT = odt.getPiezas().get(j+1);
+						}
+					}
+					if(cantAjustes==1) {//i.e. cantidad de supiezas == 1
+						getTabla().setValueAt(odt.getPiezas().get(i).getOrden(), i, COL_NRO_ORDEN_PIEZA_ODT);
+						getTabla().setValueAt(odt.getPiezas().get(i).getPiezaRemito().getMetros(), i, COL_METROS_PIEZA_ENT);
+						odt.getPiezas().get(i).setOrdenSubpieza(null);
+					}
+					break;
+				}
+			}
+		}
+		
+		private JButton getBtnRevertir() {
+			if (btnRevertir == null) {
+				btnRevertir = new JButton("Revertir");
+				btnRevertir.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						limpiar();
+						agregarElementosODTEnBaseAlOrden();
+						reversed = !reversed;
+					}
+
+				});
+			}
+			return btnRevertir;
+		}
+
+		private void agregarElementosODTEnBaseAlOrden() {
+			if (reversed) {
+				agregarElementos(odt.getPiezas());
+			} else {
+				Collections.sort(odt.getPiezas());
+				List<PiezaODT> piezas = Lists.reverse(odt.getPiezas());
+				agregarElementos(piezas);
+			}
+		}
+
+		public boolean hayPiezasImpresas() {
+			return !mapaPiezasImpresas.isEmpty();
 		}
 
 	}

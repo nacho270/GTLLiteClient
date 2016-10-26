@@ -1,12 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pieza_odt_codigo" pageWidth="300" pageHeight="200" columnWidth="260" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pieza_odt_codigo" pageWidth="320" pageHeight="240" columnWidth="280" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="3"/>
 	<parameter name="IMAGEN" class="java.lang.Object"/>
+	<parameter name="CLIENTE" class="java.lang.String"/>
+	<parameter name="ODT_CODIGO" class="java.lang.String"/>
+	<parameter name="NRO_REMITO" class="java.lang.String"/>
+	<parameter name="ARTICULO" class="java.lang.String"/>
+	<parameter name="PRODUCTO" class="java.lang.String"/>
+	<parameter name="PIEZA" class="java.lang.String"/>
+	<parameter name="METROS" class="java.lang.String"/>
+	<parameter name="ES_2DA" class="java.lang.String"/>
 	<detail>
-		<band height="144" splitType="Stretch">
+		<band height="149" splitType="Stretch">
 			<image hAlign="Center">
-				<reportElement x="23" y="13" width="216" height="120"/>
+				<reportElement x="5" y="97" width="272" height="52"/>
 				<imageExpression class="java.awt.Image"><![CDATA[$P{IMAGEN}]]></imageExpression>
 			</image>
+			<staticText>
+				<reportElement x="1" y="3" width="47" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[CLIENTE:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="50" y="3" width="89" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{CLIENTE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="155" y="2" width="33" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[ODT:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="188" y="2" width="90" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{ODT_CODIGO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="27" width="47" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[REMITO:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="50" y="27" width="89" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{NRO_REMITO}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="188" y="28" width="90" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{ARTICULO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="147" y="28" width="41" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[ANCHO:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="51" width="62" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[PRODUCTO:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="67" y="51" width="211" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{PRODUCTO}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="74" width="47" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[PIEZA:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="51" y="74" width="51" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{PIEZA}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="136" y="74" width="52" height="20"/>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[METROS:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="188" y="74" width="90" height="20"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{METROS}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="103" y="74" width="32" height="19">
+					<printWhenExpression><![CDATA[$P{ES_2DA} == "1"]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[#]]></text>
+			</staticText>
 		</band>
 	</detail>
 </jasperReport>
