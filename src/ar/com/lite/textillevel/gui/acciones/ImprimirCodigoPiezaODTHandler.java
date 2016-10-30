@@ -10,6 +10,7 @@ import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.JasperHelper;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
+import ar.com.textillevel.util.ODTCodigoHelper;
 
 public class ImprimirCodigoPiezaODTHandler {
 
@@ -29,13 +30,13 @@ public class ImprimirCodigoPiezaODTHandler {
 			Map mapaParams = new HashMap();
 			mapaParams.put("IMAGEN", GenericUtils.createBarCode(odt.getCodigo() + "" + pieza.getOrden()));
 			mapaParams.put("CLIENTE", String.valueOf(odt.getRemito().getCliente().getNroCliente()));
-			mapaParams.put("ODT_CODIGO", odt.getCodigo());
+			mapaParams.put("ODT_CODIGO", ODTCodigoHelper.getInstance().formatCodigo(odt.getCodigo()));
 			mapaParams.put("NRO_REMITO", String.valueOf(odt.getRemito().getNroRemito()));
 			mapaParams.put("ARTICULO", odt.getProductoArticulo().getArticulo().toString());			
 			mapaParams.put("PRODUCTO", odt.getProductoArticulo().getProducto().toString());			
 			mapaParams.put("PIEZA", String.valueOf(pieza.getOrden()));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));			
-			mapaParams.put("ES_2DA", "1");//TODO:
+			mapaParams.put("ES_2DA",  (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda()) ? "1":"0");
 			JasperPrint jasperPrint = JasperHelper.fillReport(reporte, mapaParams, Collections.singletonList(pieza));
 			JasperHelper.imprimirReporte(jasperPrint, false, false, 1);
 		} catch (Exception e) {

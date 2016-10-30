@@ -8,8 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +16,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
@@ -69,8 +65,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	private JPanel panTotales; 
 	private JTextField txtMetros;
 	private JTextField txtPiezas;
-	private JMenuItem menuItemEliminarFilas;
-	private JMenuItem menuItemAgregarPiezas;
 
 	private JPanel panelDatosCliente; 
 
@@ -325,11 +319,12 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private static final long serialVersionUID = 1L;
 
-		private static final int CANT_COLS = 4;
+		private static final int CANT_COLS = 5;
 		private static final int COL_NRO_ORDEN_PIEZA_ODT = 0;
 		private static final int COL_METROS_PIEZA_ENT = 1;
 		private static final int COL_METROS_PIEZA_ODT = 2;
-		private static final int COL_OBJ = 3;
+		private static final int COL_ES_DE_2DA = 3;
+		private static final int COL_OBJ = 4;
 
 		private OrdenDeTrabajo odt;
 		private boolean reversed = false;		
@@ -337,10 +332,9 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		private JButton btnDividir;
 		private JButton btnEliminarPiezas;
 		
-		private Map<Integer, Boolean> mapaPiezasImpresas = Maps.newHashMap();
+		private Map<String, Boolean> mapaPiezasImpresas = Maps.newHashMap();
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
-			initializePopupMenu();
 			getBotonAgregar().setVisible(false);
 			getBotonEliminar().setVisible(false);
 			agregarBoton(getBtnDividir());
@@ -374,16 +368,11 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private Object[] getRow(PiezaODT elemento) {
-			String nroPieza = null;
-			if(elemento.getOrdenSubpieza() == null) {
-				nroPieza = elemento.getOrden()+"";
-			} else {
-				nroPieza = elemento.getOrden() + " / " + (elemento.getOrdenSubpieza()+1);
-			}
 			Object[] row = new Object[CANT_COLS];
-			row[COL_NRO_ORDEN_PIEZA_ODT] = nroPieza;
+			row[COL_NRO_ORDEN_PIEZA_ODT] = elemento.toString();
 			row[COL_METROS_PIEZA_ENT] = elemento.getOrdenSubpieza() == null ||  elemento.getOrdenSubpieza().intValue() == 0 ?  elemento.getPiezaRemito().getMetros().toString() : "";
-			row[COL_METROS_PIEZA_ODT] = elemento.getMetros() == null ? null : elemento.getMetros().toString(); 
+			row[COL_METROS_PIEZA_ODT] = elemento.getMetros() == null ? null : elemento.getMetros().toString();
+			row[COL_ES_DE_2DA] = elemento.getEsDeSegunda() != null && elemento.getEsDeSegunda();
 			row[COL_OBJ] = elemento;
 			return row;
 		}
@@ -422,26 +411,34 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 						PiezaODT piezaODT = getElemento(row);
 						if(!StringUtil.isNullOrEmpty(metrosStr) && !metrosStr.equals("0")) {
 							piezaODT.setMetros(new BigDecimal(metrosStr));
-							boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.getId())).or(false).booleanValue();
-							if (piezaImpresa) {
-								int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("La pieza Nro. " + piezaODT.getOrden().toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
-								if (respuesta == FWJOptionPane.YES_OPTION) {
-									imprimir(piezaODT);
-								}
-							} else {
-								imprimir(piezaODT);
-							}
+							handleImprimir(piezaODT);
 						} else {
 							piezaODT.setMetros(new BigDecimal(0));
 						}
-						
 						actualizarTotales();
+					}
+					if(cell == COL_ES_DE_2DA) {
+						PiezaODT piezaODT = getElemento(row);
+						piezaODT.setEsDeSegunda((Boolean)getTabla().getValueAt(row, COL_ES_DE_2DA));
+						handleImprimir(piezaODT);
+					}
+				}
+
+				private void handleImprimir(PiezaODT piezaODT) {
+					boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.toString())).or(false).booleanValue();
+					if (piezaImpresa && piezaODT.getMetros() != null && piezaODT.getMetros().floatValue() > 0f) {
+						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("La pieza Nro. " + piezaODT.toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
+						if (respuesta == FWJOptionPane.YES_OPTION) {
+							imprimir(piezaODT);
+						}
+					} else if(piezaODT.getMetros() != null && piezaODT.getMetros().floatValue() > 0f) {
+						imprimir(piezaODT);
 					}
 				}
 
 				private void imprimir(PiezaODT pieza) {
 					new ImprimirCodigoPiezaODTHandler(pieza).imprimir();
-					mapaPiezasImpresas.put(pieza.getId(), true);
+					mapaPiezasImpresas.put(pieza.toString(), true);
 				}
 
 			};
@@ -451,65 +448,12 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ODT, "METROS SALIDA", 100, false);
 			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ODT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setCheckColumn(COL_ES_DE_2DA, "2DA", 40, false);
+			tablaPiezaEntrada.setHeaderAlignment(COL_ES_DE_2DA, FWJTable.CENTER_ALIGN);
 			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
 			tablaPiezaEntrada.setSelectionMode(FWJTable.SINGLE_SELECTION);
 
-			tablaPiezaEntrada.addMouseListener(new MouseAdapter() {
-
-				@Override
-				public void mousePressed(MouseEvent e) {
-					handleMouseEvent(e);
-				}
-
-				@Override
-				public void mouseReleased(MouseEvent e) {
-					handleMouseEvent(e);
-				}
-
-				private void handleMouseEvent(MouseEvent e) {
-					if(e.isPopupTrigger()) {
-						int newRow = getTabla().getSelectedRow();
-						boolean habilitarAgregar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() == null;
-						boolean habilitarEliminar = newRow != -1 && getElemento(newRow).getOrdenSubpieza() != null;
-						getMenuItemAgregarPiezas().setEnabled(habilitarAgregar);
-						getMenuItemEliminarFilas().setEnabled(habilitarEliminar);
-						getComponentPopupMenu().show(e.getComponent(), e.getX(), e.getY());
-					}
-				}
-
-			});
-
 			return tablaPiezaEntrada;
-		}
-
-		private void initializePopupMenu() {
-			setComponentPopupMenu(new JPopupMenu());
-			getComponentPopupMenu().add(getMenuItemAgregarPiezas());
-			getComponentPopupMenu().add(getMenuItemEliminarFilas());
-		}
-
-		private JMenuItem getMenuItemEliminarFilas() {
-			if(menuItemEliminarFilas == null) {
-				menuItemEliminarFilas = new JMenuItem("Borrar Pieza");
-				menuItemEliminarFilas.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						getBtnEliminarPieza().doClick();
-					}
-				});
-			}
-			return menuItemEliminarFilas;
-		}
-
-		private JMenuItem getMenuItemAgregarPiezas() {
-			if(menuItemAgregarPiezas == null) {
-				menuItemAgregarPiezas = new JMenuItem("Dividir");
-				menuItemAgregarPiezas.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						getBtnDividir().doClick();
-					}
-				});
-			}
-			return menuItemAgregarPiezas;
 		}
 
 		private void actualizarTotales() {
@@ -569,6 +513,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 							PiezaODT piezaODT = getElemento(selectedRow);
 							odt.getPiezas().remove(piezaODT);
 							getTabla().removeRow(selectedRow);
+							mapaPiezasImpresas.remove(piezaODT.toString());
 							ajustarSubordenes(piezaODT.getOrden());
 							actualizarTotales();
 						}
@@ -609,6 +554,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 						} else {
 							agregarSubpiezas(getTabla().getSelectedRow(), 2);
 						}
+						getTabla().clearSelection();						
 					}
 
 					private void agregarSubpiezas(int rowToSplit, Integer cantSubpiezas) {
@@ -626,6 +572,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 									PiezaODT pODT = new PiezaODT();
 									pODT.setPiezaRemito(elemento.getPiezaRemito());
 									pODT.setOrden(elemento.getOrden());
+									pODT.setOdt(elemento.getOdt());
 									pODT.setOrdenSubpieza(j+1);
 									odt.getPiezas().add(i+j+1, pODT);
 									getTabla().insertRow(i+j+1, getRow(pODT));
