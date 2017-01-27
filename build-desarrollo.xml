@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="GTL" default="sign" basedir="." >
+<project name="GTLLiteCliente" default="sign" basedir="." >
 
 	<property name="client.jar.name" value="backgtllite-client.jar" />
 	<property name="keystore" value="C:/Temp/myKeys" />
@@ -22,7 +22,7 @@
 				<include name="JNLP-INF/**" />
 			</fileset>
 
-			<fileset dir="../FWCommon/bin">
+			<fileset dir="../GTL/FWCommon/bin">
 				<include name="ar/**" />
 				<include name="fwcommon.properties" />
 				<exclude name="**/*.hbm.xml" />
