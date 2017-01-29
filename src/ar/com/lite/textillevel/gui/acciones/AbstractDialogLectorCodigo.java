@@ -117,7 +117,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 
 	private Component getTxtCodigo() {
 		if(txtCod == null) {
-			txtCod = new FWJNumericTextField();
+			txtCod = new FWJNumericTextField(0l, 99999999l);
 			Font font1 = new Font("SansSerif", Font.BOLD, 50);
 			txtCod.setFont(font1);
 			txtCod.setPreferredSize(new Dimension(400, 50));
@@ -136,10 +136,21 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	            }
 
 	            private void finLectura() {
+	            	String texto = txtCod.getText();
+					if (StringUtil.isNullOrEmptyString(texto)) {
+						FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Debe ingresar el código a buscar.", "Error");
+                    	reset();
+                        return;
+	            	}
+					if (texto.length() != 8) {
+						FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código de ODT debe contener 8 caracteres.", "Error");
+						requestFocus();
+						return;
+	            	}
 	            	try {
-	            		T obj = callback.buscar(txtCod.getText().trim());
+	            		T obj = callback.buscar(texto.trim());
 	            		if(obj == null) {
-	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código " + txtCod.getText().trim() + " es inexistente.", "Error");
+	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código " + texto.trim() + " es inexistente.", "Error");
 	                    	reset();
 	                        return;
 	            		}
@@ -159,9 +170,13 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 
 	            private void reset() {
 	                txtCod.setText("");
-	                txtCod.requestFocus();
-	                txtCod.requestFocusInWindow();
+	                requestFocus();
 	            }
+
+				private void requestFocus() {
+					txtCod.requestFocus();
+	                txtCod.requestFocusInWindow();
+				}
 
 	        });
 		}
