@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,10 @@ import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
 import org.apache.taglibs.string.util.StringW;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import ar.com.fwcommon.componentes.FWDateField;
 import ar.com.fwcommon.componentes.FWJNumericTextField;
@@ -37,12 +42,6 @@ import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
