@@ -30,13 +30,13 @@ public class ImprimirCodigoPiezaODTHandler {
 			Map mapaParams = new HashMap();
 			mapaParams.put("IMAGEN", GenericUtils.createBarCode(odt.getCodigo() + "" + pieza.getOrden()));
 			mapaParams.put("CLIENTE", String.valueOf(odt.getRemito().getCliente().getNroCliente()));
-			mapaParams.put("ODT_CODIGO", ODTCodigoHelper.getInstance().formatCodigo(odt.getCodigo()));
+			mapaParams.put("ODT_CODIGO", ODTCodigoHelper.getInstance().formatCodigo2DigitosAnio(odt.getCodigo()));
 			mapaParams.put("NRO_REMITO", String.valueOf(odt.getRemito().getNroRemito()));
 			mapaParams.put("ARTICULO", odt.getProductoArticulo().getArticulo().toString());			
-			mapaParams.put("PRODUCTO", odt.getProductoArticulo().getProducto().toString());			
-			mapaParams.put("PIEZA", String.valueOf(pieza.getOrden()));
+			mapaParams.put("PRODUCTO", odt.getProductoArticulo().toString());			
+			mapaParams.put("PIEZA", String.valueOf(pieza.getOrden()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));			
-			mapaParams.put("ES_2DA",  (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda()) ? "1":"0");
+			mapaParams.put("TERMINAL",  "TERMINAL HARDCODEADA");
 			JasperPrint jasperPrint = JasperHelper.fillReport(reporte, mapaParams, Collections.singletonList(pieza));
 			JasperHelper.imprimirReporte(jasperPrint, false, false, 1);
 		} catch (Exception e) {
