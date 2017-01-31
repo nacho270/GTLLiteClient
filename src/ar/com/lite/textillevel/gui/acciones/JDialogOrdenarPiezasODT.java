@@ -1,7 +1,10 @@
 package ar.com.lite.textillevel.gui.acciones;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.FocusTraversalPolicy;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,6 +15,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -30,6 +35,7 @@ import ar.com.fwcommon.componentes.FWJTextField;
 import ar.com.fwcommon.componentes.PanelTabla;
 import ar.com.fwcommon.util.GuiUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
+import ar.com.lite.textillevel.gui.util.TableCellListener;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
@@ -67,6 +73,20 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private boolean acepto;
 	
 	private boolean estadoModificado = false;
+	
+	private int piezaActual = 1;
+	
+	private static final Comparator<PiezaODT> piezasComparator = new Comparator<PiezaODT>() {
+		public int compare(PiezaODT o1, PiezaODT o2) {
+			if (o1.getOrden() != null && o2.getOrden() != null) {
+				return o1.getOrden().compareTo(o2.getOrden());
+			}
+			if (o1.getOrden() == null) {
+				return 1;
+			}
+			return -1;
+		}
+	};
 
 	public JDialogOrdenarPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
@@ -77,6 +97,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		construct();
 		setDatos();
 		setModal(true);
+		getPanTablaPieza().initEdition();
 	}
 
 	private void setDatos() {
@@ -95,6 +116,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		add(getPanDetalle(), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 1, 1, 0, 1));
 		add(getPanTotales(), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
 		add(getPanelBotones(), GenericUtils.createGridBagConstraints(0, 2, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
+        setFocusTraversalPolicy(crearPoliticaFocus());
 	}
 
 	private JPanel getPanTotales() {
@@ -350,17 +372,16 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		private static final int COL_OBJ = 3;
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
-			Collections.sort(odt.getPiezas(), new Comparator<PiezaODT>() {
-				public int compare(PiezaODT o1, PiezaODT o2) {
-					if (o1.getOrden() == null || o2.getOrden() == null) {
-						return o1.getPiezaRemito().getOrdenPieza().compareTo(o2.getPiezaRemito().getOrdenPieza());
-					}
-					return o1.getOrden().compareTo(o2.getOrden());
-				}
-			});
+			Collections.sort(odt.getPiezas(), piezasComparator);
+			new TableCellListener(getTabla(), action);
 			agregarElementos(odt.getPiezas());
 			getBotonAgregar().setVisible(false);
 			getBotonEliminar().setVisible(false);
+		}
+
+		public void initEdition() {
+			getTabla().changeSelection(0, COL_ORDEN, false, false);
+			getTabla().requestFocus();
 		}
 
 		public String validar() {
@@ -371,12 +392,16 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 				if (valueAt instanceof String) {
 					String orden = (String) valueAt;
 					if (orden == null || orden.equals("0")) {
+						getTabla().changeSelection(0, COL_ORDEN, false, false);
+						getTabla().requestFocus();
 						return "Falta cargar el orden en algunas piezas";
 					}
 					ordenes.add(Integer.valueOf(orden));
 				} else {
 					Integer orden = (Integer) valueAt;
 					if (orden == null || orden.equals(0)) {
+						getTabla().changeSelection(0, COL_ORDEN, false, false);
+						getTabla().requestFocus();
 						return "Falta cargar el orden en algunas piezas";
 					}
 					ordenes.add(orden);
@@ -390,6 +415,8 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 				Integer orden = ordenes.get(i);
 				Integer ordenSiguiente = ordenes.get(i+1);
 				if(!(orden + 1 == ordenSiguiente)) {
+					getTabla().changeSelection(0, COL_ORDEN, false, false);
+					getTabla().requestFocus();
 					return "Los ordenes deben ser consecutivos. Se ha encontrado un salto entre " + orden + " y " + ordenSiguiente;
 				}
 			}
@@ -413,61 +440,71 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			return row;
 		}
 
+		final Action action = new AbstractAction() {
+			private static final long serialVersionUID = -669955720006155056L;
+
+			public void actionPerformed(ActionEvent e) {
+		        TableCellListener tcl = (TableCellListener)e.getSource();
+		        int row = tcl.getRow();
+		        int cell = tcl.getColumn();
+		        Object oldValue = tcl.getOldValue();
+		        Object newValue = tcl.getNewValue();
+		        if (cell == COL_ORDEN) {
+//		        	System.out.println("OLD: " + oldValue);
+//		        	System.out.println("NEW: " + newValue);
+//		        	System.out.println("==========");
+					Integer orden = newValue instanceof String ? Integer.valueOf((String) newValue) : (Integer) newValue;
+					Integer oldOrden = oldValue instanceof String ? Integer.valueOf((String) oldValue) : (Integer) oldValue;
+					if (orden == 0) {
+						if (oldOrden == null) {
+							blanquearCelda(cell, row);
+							return;
+						}
+						if(oldOrden != (piezaActual - 1)) {
+							FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Solo puede borrar el ultimo valor ingresado.", "Error");
+							getTabla().setValueAt(oldOrden, row, cell);
+							return;
+						}
+						piezaActual--;
+						estadoModificado = true;
+						blanquearCelda(cell, row);
+						return;
+					}
+					if (orden.intValue() != piezaActual) {
+						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Debe ingresar la pieza " + piezaActual + ".", "Error");
+						blanquearCelda(cell, row);
+						getTabla().setEditingRow(row);
+						getTabla().setEditingColumn(cell);
+						getTabla().changeSelection(row, COL_ORDEN, false, false);
+						getTabla().requestFocus();
+						return;
+					}
+					PiezaODT piezaODT = getElemento(row);
+					piezaODT.setOrden(orden);
+					odt.getPiezas().set(row, piezaODT);
+					estadoModificado = true;
+					limpiar();
+					Collections.sort(odt.getPiezas(), piezasComparator);
+					piezaActual++;
+					agregarElementos(odt.getPiezas());
+				}
+		    }
+			
+			private void blanquearCelda(int cell, int row) {
+				try {
+					getTabla().setValueAt(null, row, cell);
+				} catch (Exception e) {
+					// ESTO TIRA EXCEPTION, PERO NO PASA NADA.
+					// HAGO ESTO PARA OCULTAR EL STACKTRACE
+				}
+				PiezaODT pieza = getElemento(row);
+				pieza.setOrden(null);
+			}
+		};
+
 		@Override
 		protected FWJTable construirTabla() {
-			final FWJTable tablaPiezaEntrada = new FWJTable(0, CANT_COLS) {
-
-				private static final long serialVersionUID = -2327372268374179171L;
-
-				public void cellEdited(int cell, int row) {
-					if (cell == COL_ORDEN) {
-						String valor = (String) getTabla().getValueAt(row, cell);
-						Integer orden = Integer.valueOf((String) valor);
-						boolean ordenRepetido = false;
-						for (PiezaODT podt : odt.getPiezas()) {
-							if (podt.getOrden() != null && podt.getOrden().equals(orden)) {
-								ordenRepetido = true;
-								break;
-							}
-						}
-						if (orden <= 0) {
-							estadoModificado = true;
-							blanquearCelda(cell, row);
-							return;
-						}
-						if (ordenRepetido) {
-							FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "El orden " + orden + " ya ha sido ingresado.", "Error");
-							blanquearCelda(cell, row);
-							return;
-						}
-						PiezaODT piezaODT = getElemento(row);
-						piezaODT.setOrden(orden);
-						odt.getPiezas().set(row, piezaODT);
-						estadoModificado = true;
-						limpiar();
-						Collections.sort(odt.getPiezas(), new Comparator<PiezaODT>() {
-							public int compare(PiezaODT o1, PiezaODT o2) {
-								if (o1.getOrden() == null || o2.getOrden() == null) {
-									return o1.getPiezaRemito().getOrdenPieza().compareTo(o2.getPiezaRemito().getOrdenPieza());
-								}
-								return o1.getOrden().compareTo(o2.getOrden());
-							}
-						});
-						agregarElementos(odt.getPiezas());
-					}
-				}
-
-				private void blanquearCelda(int cell, int row) {
-					try {
-						getTabla().setValueAt(null, row, cell);
-					} catch (Exception e) {
-						// ESTO TIRA EXCEPTION, PERO NO PASA NADA.
-						// HAGO ESTO PARA OCULTAR EL STACKTRACE
-					}
-					PiezaODT pieza = getElemento(row);
-					pieza.setOrden(null);
-				}
-			};
+			final FWJTable tablaPiezaEntrada = new FWJTable(0, CANT_COLS);
 			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 150, 150, true);
 			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 150, true);
 			tablaPiezaEntrada.setIntColumn(COL_ORDEN, "ORDEN", 90, false);
@@ -480,6 +517,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
 			tablaPiezaEntrada.setReorderingAllowed(false);
 			tablaPiezaEntrada.setAllowSorting(true);
+			tablaPiezaEntrada.setCellSelectionEnabled(true);
 			return tablaPiezaEntrada;
 		}
 
@@ -493,4 +531,34 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			return null;
 		}
 	}
+	
+	private FocusTraversalPolicy crearPoliticaFocus() {
+        return new FocusTraversalPolicy() {
+
+            @Override
+            public Component getLastComponent(final Container aContainer) {
+                return getPanTablaPieza().getTabla();
+            }
+
+            @Override
+            public Component getFirstComponent(final Container aContainer) {
+                return getPanTablaPieza().getTabla();
+            }
+
+            @Override
+            public Component getDefaultComponent(final Container aContainer) {
+                return getPanTablaPieza().getTabla();
+            }
+
+            @Override
+            public Component getComponentBefore(final Container aContainer, final Component aComponent) {
+                return getPanTablaPieza().getTabla();
+            }
+
+            @Override
+            public Component getComponentAfter(final Container aContainer, final Component aComponent) {
+                return getPanTablaPieza().getTabla();
+            }
+        };
+    }
 }
