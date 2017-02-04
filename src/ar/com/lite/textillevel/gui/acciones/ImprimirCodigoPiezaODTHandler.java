@@ -34,7 +34,7 @@ public class ImprimirCodigoPiezaODTHandler {
 			mapaParams.put("NRO_REMITO", String.valueOf(odt.getRemito().getNroRemito()));
 			mapaParams.put("ARTICULO", odt.getProductoArticulo().getArticulo().toString());			
 			mapaParams.put("PRODUCTO", odt.getProductoArticulo().toString());			
-			mapaParams.put("PIEZA", String.valueOf(pieza.getOrden()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
+			mapaParams.put("PIEZA", String.valueOf(pieza.toString()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));			
 			mapaParams.put("TERMINAL",  "TERMINAL HARDCODEADA");
 			JasperPrint jasperPrint = JasperHelper.fillReport(reporte, mapaParams, Collections.singletonList(pieza));
