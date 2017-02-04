@@ -20,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
 import org.apache.taglibs.string.util.StringW;
@@ -404,13 +405,34 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				}
 
 				@Override
-				public void cellEdited(int cell, int row) {
+				public void cellEdited(int cell, final int row) {
 					if(cell == COL_METROS_PIEZA_ODT) {
 						String metrosStr = (String)getTabla().getValueAt(row, COL_METROS_PIEZA_ODT);
-						PiezaODT piezaODT = getElemento(row);
+						final PiezaODT piezaODT = getElemento(row);
 						if(!StringUtil.isNullOrEmpty(metrosStr) && !metrosStr.equals("0")) {
-							piezaODT.setMetros(new BigDecimal(metrosStr));
-							handleImprimir(piezaODT);
+							final BigDecimal metrosNew = new BigDecimal(metrosStr);
+							float dif = metrosNew.subtract(piezaODT.getPiezaRemito().getMetros()).abs().floatValue();
+							if(!piezaYaDividida(piezaODT) && dif > piezaODT.getPiezaRemito().getMetros().floatValue()*0.2f) {//solo muestro la pregunta para las piezas q no fueron divididas y que cumplen con la regla del 20%
+									SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											if(FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, "¿Está seguro que desea ingresar esa cantidad de metros?", "Atención") == FWJOptionPane.YES_OPTION) {
+												piezaODT.setMetros(metrosNew);
+												handleImprimir(piezaODT);
+											} else {
+												setValueAt(null, row, COL_METROS_PIEZA_ODT);
+											}
+										}
+									});
+							} else{
+								piezaODT.setMetros(metrosNew);
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										handleImprimir(piezaODT);
+									}
+								});
+							}
 						} else {
 							piezaODT.setMetros(new BigDecimal(0));
 						}
@@ -533,6 +555,11 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						if(getBtnDividir().getText().equals(TEXTO_DIVIDIR)) {
+							if(piezaYaDividida(getElemento(getTabla().getSelectedRow()))) {
+								FWJOptionPane.showInformationMessage(JDialogAsignarMetrosPiezasODT.this, "Primero elimine las subpiezas y luego reintente dividir.", "Atención");
+								return;
+							}
+							
 							boolean ok = false;
 							Integer cantSubpiezas = null;
 							do {
@@ -540,7 +567,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 								if(input == null){
 									break;
 								}
-								if (input.trim().length()==0 || !GenericUtils.esNumerico(input)) {
+								if (input.trim().length()==0 || !GenericUtils.esNumerico(input) || Integer.valueOf(input) <= 0) {
 									FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, "Ingreso incorrecto", "error");
 								} else {
 									ok = true;
@@ -551,7 +578,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 								agregarSubpiezas(getTabla().getSelectedRow(), cantSubpiezas);
 							}
 						} else {
-							agregarSubpiezas(getTabla().getSelectedRow(), 2);
+							agregarSubpiezas(getTabla().getSelectedRow(), 1);
 						}
 						getTabla().clearSelection();						
 					}
@@ -559,28 +586,38 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 					private void agregarSubpiezas(int rowToSplit, Integer cantSubpiezas) {
 						Collections.sort(odt.getPiezas());
 						Integer allPiezasSizeOriginal = odt.getPiezas().size();
-						PiezaODT elemento = getElemento(rowToSplit);
+						PiezaODT podtParent = findParent(getElemento(rowToSplit), odt.getPiezas());
 						//seteo los datos de subpieza solo si la acción es "DIVIDIR" i.e. está habilitada sobre una piezaODT que NO es una subpieza 
-						if(elemento.getOrdenSubpieza() == null) {
-							elemento.setOrdenSubpieza(0);
-							getTabla().setValueAt(elemento.getOrden() + " / " + 1, rowToSplit, COL_NRO_ORDEN_PIEZA_ODT);
-						}
 						for(int i=0; i<allPiezasSizeOriginal; i++) {
 							if(i == rowToSplit) {
-								for(int j=0; j < cantSubpiezas-1; j++) {
-									PiezaODT pODT = new PiezaODT();
-									pODT.setPiezaRemito(elemento.getPiezaRemito());
-									pODT.setOrden(elemento.getOrden());
-									pODT.setOdt(elemento.getOdt());
-									pODT.setOrdenSubpieza(j+1);
-									odt.getPiezas().add(i+j+1, pODT);
-									getTabla().insertRow(i+j+1, getRow(pODT));
+								OrdenDeTrabajo odt = podtParent.getOdt();
+								for(int j=0; j < cantSubpiezas; j++) {
+									PiezaODT podtChild = new PiezaODT();
+									podtChild.setPiezaRemito(podtParent.getPiezaRemito());
+									podtChild.setOrden(podtParent.getOrden());
+									podtChild.setOdt(odt);
+									podtChild.setOrdenSubpieza(j+1);
+									odt.getPiezas().add(i+j+1, podtChild);
+									getTabla().insertRow(i+j+1, getRow(podtChild));
 								}
 							}
 						}
-						ajustarSubordenes(elemento.getOrden());
+						ajustarSubordenes(podtParent.getOrden());
 						
 						actualizarTotales();
+					}
+
+					private PiezaODT findParent(PiezaODT elemento, List<PiezaODT> piezas) {
+						if(elemento.getOrdenSubpieza() == null) {
+							return elemento;
+						} else {
+							for(PiezaODT pieza : piezas) {
+								if(pieza.getOrden().equals(elemento.getOrden()) && pieza.getOrdenSubpieza() == null) {
+									return pieza;
+								}
+							}
+						}
+						return null;
 					}
 
 				});
@@ -588,26 +625,24 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			return btnDividir;
 		}
 
+		private boolean piezaYaDividida(PiezaODT elemento) {
+			for(PiezaODT pODT : odt.getPiezas()) {
+				if(pODT.getOrden().equals(elemento.getOrden()) && pODT.getOrdenSubpieza() != null) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 		private void ajustarSubordenes(Integer orden) {
 			for(int i=0; i<odt.getPiezas().size(); i++) {
 				PiezaODT pODT = odt.getPiezas().get(i);
 				if(pODT.getOrden().equals(orden)) {
-					int cantAjustes=0;
-					for(int j=i; pODT != null && pODT.getOrdenSubpieza() != null && pODT.getOrden().equals(orden) && j<odt.getPiezas().size(); j++) {
-						pODT.setOrdenSubpieza(j-i);
-						getTabla().setValueAt(pODT.getOrden() + " / " + (pODT.getOrdenSubpieza()+1), j, COL_NRO_ORDEN_PIEZA_ODT);
-						if(pODT.getOrdenSubpieza() == 0) {
-							getTabla().setValueAt(pODT.getPiezaRemito().getMetros(), i, COL_METROS_PIEZA_ENT);
-						}
-						cantAjustes++;
-						if(j+1 < odt.getPiezas().size()) {
-							pODT = odt.getPiezas().get(j+1);
-						}
-					}
-					if(cantAjustes==1) {//i.e. cantidad de supiezas == 1
-						getTabla().setValueAt(odt.getPiezas().get(i).getOrden(), i, COL_NRO_ORDEN_PIEZA_ODT);
-						getTabla().setValueAt(odt.getPiezas().get(i).getPiezaRemito().getMetros(), i, COL_METROS_PIEZA_ENT);
-						odt.getPiezas().get(i).setOrdenSubpieza(null);
+					int j = i+1;
+					while(j<odt.getPiezas().size() && odt.getPiezas().get(j).getOrdenSubpieza() != null) {
+						odt.getPiezas().get(j).setOrdenSubpieza(j-i);
+						getTabla().setValueAt(odt.getPiezas().get(j).toString(), j, COL_NRO_ORDEN_PIEZA_ODT);
+						j++;
 					}
 					break;
 				}
