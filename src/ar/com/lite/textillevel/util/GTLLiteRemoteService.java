@@ -4,8 +4,11 @@ import java.net.Inet4Address;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
+import main.GTLLiteGlobalCache;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
+import ar.com.textillevel.entidades.to.TerminalServiceResponse;
+import ar.com.textillevel.facade.api.remote.EntregaReingresoDocumentosFacadeRemote;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemote;
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
@@ -18,22 +21,22 @@ public class GTLLiteRemoteService {
 
 	public static OrdenDeTrabajo getODTByCodigo(final String codigo) throws RemoteException {
 		OrdenDeTrabajo odt = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
-		if(odt != null) {
+		if (odt != null) {
 			return odt;
-		} else {//busco en el segundo
+		} else {// busco en el segundo
 			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(codigo);
 		}
 	}
 
 	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
-		//consulto en el primero
+		// consulto en el primero
 		OrdenDeTrabajo odtCheck = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
-		if(odtCheck != null) {//estaba en el primero => grabo ahí
+		if (odtCheck != null) {// estaba en el primero => grabo ahí
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
 		}
-		//consulto en el segundo
+		// consulto en el segundo
 		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
-		if(odtCheck != null) {//estaba en el segundo => grabo ahí
+		if (odtCheck != null) {// estaba en el segundo => grabo ahí
 			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
 		}
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
@@ -47,7 +50,21 @@ public class GTLLiteRemoteService {
 		}
 		return null;
 	}
-	
+
+	public static TerminalServiceResponse marcarEntregado(String codigo) {
+		if (codigo.endsWith("0")) {
+			return gtlBeanFactory1.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
+		}
+		return gtlBeanFactory2.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
+	}
+
+	public static TerminalServiceResponse reingresar(String codigo) {
+		if (codigo.endsWith("0")) {
+			return gtlBeanFactory1.getBean2(EntregaReingresoDocumentosFacadeRemote.class).reingresar(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
+		}
+		return gtlBeanFactory2.getBean2(EntregaReingresoDocumentosFacadeRemote.class).reingresar(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
+	}
+
 	public static class GTLLiteBeanFactory extends BeanFactoryRemoteAbstract {
 
 		private static GTLLiteBeanFactory instance;
@@ -56,6 +73,7 @@ public class GTLLiteRemoteService {
 			super("GTL");
 			addJndiName(OrdenDeTrabajoFacadeRemote.class);
 			addJndiName(TerminalFacadeRemote.class);
+			addJndiName(EntregaReingresoDocumentosFacadeRemote.class);
 		}
 
 		public static GTLLiteBeanFactory getInstance() {
@@ -77,14 +95,15 @@ public class GTLLiteRemoteService {
 		protected GTLLiteOtroSistemaBeanFactory() throws FWException {
 			super("GTL", createPropertiesOtroSistema());
 			addJndiName(OrdenDeTrabajoFacadeRemote.class);
+			addJndiName(TerminalFacadeRemote.class);
+			addJndiName(EntregaReingresoDocumentosFacadeRemote.class);
 		}
 
 		private static Properties createPropertiesOtroSistema() {
 			Properties properties = new Properties();
 			properties.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
 			properties.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-			properties.put("java.naming.provider.url",
-					System.getProperties().get("java.naming.provider.url_otro_sistema"));
+			properties.put("java.naming.provider.url", System.getProperties().get("java.naming.provider.url_otro_sistema"));
 			return properties;
 		}
 

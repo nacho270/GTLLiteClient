@@ -7,6 +7,8 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -43,9 +45,12 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 import org.krysalis.barcode4j.impl.code128.Code128Bean;
@@ -56,6 +61,7 @@ import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.componentes.FWJTable;
 import ar.com.fwcommon.util.DateUtil;
 import ar.com.fwcommon.util.FileUtil;
+import ar.com.fwcommon.util.GuiUtil;
 import ar.com.fwcommon.util.StringUtil;
 import ar.com.fwcommon.util.SwingWorker;
 import ar.com.textillevel.entidades.config.ParametrosGenerales;
@@ -567,4 +573,17 @@ public class GenericUtils {
 		return paramGenFacade;
 	}
 
+	public static void showTemporaryDialog(final int waitTime, final String titulo, final JOptionPane pane) {
+        final JDialog dialog = pane.createDialog(titulo);
+        GuiUtil.setEstadoPanel(pane, false);
+        final Timer timer = new Timer(waitTime, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dialog.dispose();				
+			}
+		});
+        timer.start();
+        dialog.setVisible(true);
+        dialog.dispose();
+    }
 }
