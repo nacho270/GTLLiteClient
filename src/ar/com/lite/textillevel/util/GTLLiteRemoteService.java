@@ -1,5 +1,6 @@
 package ar.com.lite.textillevel.util;
 
+import java.net.Inet4Address;
 import java.rmi.RemoteException;
 import java.util.Properties;
 
@@ -7,6 +8,8 @@ import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemote;
+import ar.com.textillevel.modulos.terminal.entidades.Terminal;
+import ar.com.textillevel.modulos.terminal.facade.api.remote.TerminalFacadeRemote;
 
 public class GTLLiteRemoteService {
 
@@ -36,6 +39,15 @@ public class GTLLiteRemoteService {
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
 	}
 
+	public static Terminal getTerminalData() {
+		try {
+			return gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(Inet4Address.getLocalHost().getHostAddress());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static class GTLLiteBeanFactory extends BeanFactoryRemoteAbstract {
 
 		private static GTLLiteBeanFactory instance;
@@ -43,6 +55,7 @@ public class GTLLiteRemoteService {
 		protected GTLLiteBeanFactory() throws FWException {
 			super("GTL");
 			addJndiName(OrdenDeTrabajoFacadeRemote.class);
+			addJndiName(TerminalFacadeRemote.class);
 		}
 
 		public static GTLLiteBeanFactory getInstance() {

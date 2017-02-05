@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import main.GTLLiteGlobalCache;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
@@ -36,7 +37,7 @@ public class ImprimirCodigoPiezaODTHandler {
 			mapaParams.put("PRODUCTO", odt.getProductoArticulo().toString());			
 			mapaParams.put("PIEZA", String.valueOf(pieza.toString()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));			
-			mapaParams.put("TERMINAL",  "TERMINAL HARDCODEADA");
+			mapaParams.put("TERMINAL",  GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
 			JasperPrint jasperPrint = JasperHelper.fillReport(reporte, mapaParams, Collections.singletonList(pieza));
 			JasperHelper.imprimirReporte(jasperPrint, false, false, 1);
 		} catch (Exception e) {

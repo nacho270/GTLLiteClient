@@ -128,6 +128,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 	                    if (txtCod.getText().trim().length() == 0) {
 	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Ingrese un código.", "Error");
+	                    	requestFocus();
 	                        return;
 	                    }
 	                    finLectura();
@@ -169,7 +170,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	            }
 
 	            private void reset() {
-	                txtCod.setText("");
+	                txtCod.setValue(null);
 	                requestFocus();
 	            }
 

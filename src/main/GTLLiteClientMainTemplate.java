@@ -1,13 +1,20 @@
 package main;
 
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+
+import javax.swing.Action;
 import javax.swing.UIManager;
 
 import ar.com.fwcommon.boss.BossEstilos;
+import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.templates.main.FWMainTemplate;
 import ar.com.fwcommon.templates.main.config.IConfigClienteManager;
 import ar.com.fwcommon.templates.main.menu.MenuAyuda;
 import ar.com.fwcommon.util.MiscUtil;
+import ar.com.lite.textillevel.util.GTLLiteRemoteService;
+import ar.com.textillevel.modulos.terminal.entidades.Terminal;
 
 public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmptyLoginManager, GTLLiteConfigClienteManager> {
 
@@ -69,7 +76,6 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmpty
 
 	@Override
 	protected void postConstruccion() throws FWException {
-		crearTitulo();
 	}
 
 	@Override
@@ -81,13 +87,32 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmpty
 
 	@Override
 	protected final void postLogin() throws FWException {
-		super.postLogin();
+		try {
+			Terminal terminalData = GTLLiteRemoteService.getTerminalData();
+			if (terminalData == null) {
+				FWJOptionPane.showErrorMessage(this, "No se ha configurado el módulo para esta terminal", "Error");
+				return;
+			}
+			if (terminalData.getModuloPorDefecto() == null) {
+				FWJOptionPane.showErrorMessage(this, "Esta terminal no tiene un modulo configurado", "Error");
+				return;
+			}
+			crearTitulo(terminalData.getNombre());
+			GTLLiteGlobalCache.getInstance().setTerminalData(terminalData);
+			Action newInstance = (Action)Class.forName(terminalData.getModuloPorDefecto().getClase()).getConstructor(new Class[] { Frame.class }).newInstance(new Object[] { FWMainTemplate.getFrameInstance() });
+			newInstance.actionPerformed(new ActionEvent(new Object(), 0, ""));
+		} catch(Exception e) {
+			e.printStackTrace();
+			FWJOptionPane.showErrorMessage(this, "Ha ocurrido un error al querer iniciar el modulo", "Error");
+		}
 	}
 
-	private void crearTitulo() throws FWException {
-		StringBuffer sb = new StringBuffer("Textil Level - Terminal simple");
+	private void crearTitulo(final String nombre) throws FWException {
+		StringBuffer sb = new StringBuffer("Textil Level - Terminal [");
+		sb.append(nombre);
+		sb.append("]");
 		if (version != null) {
-			sb.append(" v").append(version);
+			sb.append(" - v").append(version);
 		}
 		setTitle(sb.toString());
 	}
