@@ -29,7 +29,7 @@ public class ImprimirCodigoPiezaODTHandler {
 		try {
 			OrdenDeTrabajo odt = pieza.getOdt();
 			Map mapaParams = new HashMap();
-			mapaParams.put("IMAGEN", GenericUtils.createBarCode(odt.getCodigo() + "" + pieza.getOrden()));
+			mapaParams.put("IMAGEN", GenericUtils.createBarCode(pieza.getCodigoBarras(odt.getCodigo())));
 			mapaParams.put("CLIENTE", String.valueOf(odt.getRemito().getCliente().getNroCliente()));
 			mapaParams.put("ODT_CODIGO", ODTCodigoHelper.getInstance().formatCodigo2DigitosAnio(odt.getCodigo()));
 			mapaParams.put("NRO_REMITO", String.valueOf(odt.getRemito().getNroRemito()));
