@@ -219,7 +219,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 			txtCodPiezaSalida.addKeyListener(new KeyAdapter() {
 
 	            @Override
-	            public void keyReleased(final KeyEvent e) {
+	            public void keyPressed(final KeyEvent e) {
 	                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 	                	if(!alertMostrandose) {
 	                		if (txtCodPiezaSalida.getText().trim().length() != 12) {
@@ -240,7 +240,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 	                		getTxtCodPiezaSalida().setValue(null);
 	                	}
 	                }
-	                alertMostrandose = false;
+                	alertMostrandose = false;
 	            }
 
 	        });
@@ -373,7 +373,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 				getTabla().setValueAt("<html><div style=\"padding:2px 0px; background-color:green\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></html>", row, COL_STATUS_CONTROL);
 			} else {//Diferente => pinto de rojo y pregunto si quiere imprimir
 				getTabla().setValueAt("<html><body style=\"background-color:red\"><div style=\"padding:2px 0px\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO OK &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></body></html>", row, COL_STATUS_CONTROL);
-				alertMostrandose = true;
+				JDialogEntregaMercaderiaRemitoSalida.this.alertMostrandose = true;
 				if(FWJOptionPane.showQuestionMessage(JDialogEntregaMercaderiaRemitoSalida.this, StringW.wordWrap("Los metros de la pieza difieren con respecto a los metros de salida ¿Desea imprimirla nuevamente?"), "Atención") == FWJOptionPane.YES_OPTION) {
 					getPanTablaPieza().handleImprimir(pr.getMetros(), piezaODT);
 					return;
