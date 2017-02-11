@@ -42,6 +42,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	private FWJNumericTextField txtCod;
 
 	private DialogLectorCodigoCallback<T> callback;
+	private boolean alertMostrandose=false;
 	
 	public AbstractDialogLectorCodigo(Frame owner, String titulo, final DialogLectorCodigoCallback<T> callback) {
 		super(owner);
@@ -124,16 +125,20 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 			txtCod.addKeyListener(new KeyAdapter() {
 
 	            @Override
-	            public void keyReleased(final KeyEvent e) {
+	            public void keyPressed(final KeyEvent e) {
 	                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-	                    if (txtCod.getText().trim().length() == 0) {
-	                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Ingrese un código.", "Error");
-	                    	requestFocus();
-	                        return;
-	                    }
-	                    finLectura();
-	                    return;
+	                	if(!alertMostrandose) {
+		                    if (txtCod.getText().trim().length() == 0) {
+		                    	alertMostrandose = true;
+		                    	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Ingrese un código.", "Error");
+		                    	requestFocus();
+		                        return;
+		                    }
+		                    finLectura();
+		                    return;
+	                	}
 	                }
+                	alertMostrandose = false;
 	            }
 
 	            private void finLectura() {
