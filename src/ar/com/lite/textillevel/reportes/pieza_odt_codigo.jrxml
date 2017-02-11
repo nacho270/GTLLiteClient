@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pieza_odt_codigo" pageWidth="290" pageHeight="233" columnWidth="280" leftMargin="5" rightMargin="5" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
-	<property name="ireport.y" value="67"/>
+	<property name="ireport.y" value="0"/>
 	<parameter name="IMAGEN" class="java.lang.Object"/>
 	<parameter name="CLIENTE" class="java.lang.String"/>
 	<parameter name="ODT_CODIGO" class="java.lang.String"/>
@@ -12,137 +12,166 @@
 	<parameter name="PIEZA" class="java.lang.String"/>
 	<parameter name="METROS" class="java.lang.String"/>
 	<parameter name="TERMINAL" class="java.lang.String"/>
-	<background>
-		<band height="233">
-			<image hAlign="Center">
-				<reportElement x="60" y="59" width="143" height="110"/>
-				<imageExpression class="java.lang.String"><![CDATA["ar/com/lite/textillevel/imagenes/logogtl-marca-agua.jpg"]]></imageExpression>
-			</image>
-		</band>
-	</background>
 	<detail>
-		<band height="223" splitType="Stretch">
-			<staticText>
-				<reportElement x="101" y="28" width="25" height="20"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
-				</textElement>
-				<text><![CDATA[ODT:]]></text>
-			</staticText>
+		<band height="233" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="5" width="277" height="226"/>
+			</rectangle>
 			<textField>
-				<reportElement x="126" y="28" width="56" height="20"/>
-				<textElement verticalAlignment="Middle"/>
+				<reportElement x="127" y="24" width="56" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{ODT_CODIGO}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="9" y="116" width="47" height="20"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
+				<reportElement x="142" y="91" width="34" height="15"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[PIEZA:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="56" y="116" width="32" height="20"/>
-				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<reportElement x="178" y="91" width="73" height="15"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{PIEZA}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="132" y="116" width="52" height="20"/>
-				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
+				<reportElement x="143" y="116" width="43" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
-				<text><![CDATA[METROS:]]></text>
+				<text><![CDATA[METROS]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="186" y="116" width="47" height="20"/>
-				<textElement verticalAlignment="Middle"/>
+				<reportElement x="191" y="108" width="80" height="35"/>
+				<box leftPadding="0">
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{METROS}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="79" y="49" width="185" height="31"/>
-				<textElement textAlignment="Left" verticalAlignment="Top"/>
+				<reportElement x="81" y="51" width="195" height="31"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{PRODUCTO}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="17" y="49" width="62" height="20"/>
+				<reportElement x="16" y="51" width="62" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Top">
-					<font isUnderline="true"/>
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[PRODUCTO:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="183" y="28" width="41" height="20"/>
+				<reportElement x="187" y="24" width="41" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[ANCHO:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="225" y="28" width="49" height="20"/>
-				<textElement verticalAlignment="Middle"/>
+				<reportElement x="230" y="24" width="46" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font size="12" isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{ARTICULO}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="61" y="82" width="70" height="20"/>
-				<textElement verticalAlignment="Middle"/>
+				<reportElement x="62" y="87" width="70" height="20"/>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{NRO_REMITO}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="19" y="82" width="42" height="20"/>
+				<reportElement x="15" y="87" width="44" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[REMITO:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="65" y="29" width="36" height="20"/>
-				<textElement verticalAlignment="Middle"/>
+				<reportElement x="64" y="25" width="36" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="13" isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{CLIENTE}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="19" y="29" width="46" height="20"/>
+				<reportElement x="15" y="25" width="48" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
-					<font isUnderline="true"/>
+					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[CLIENTE:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="204" width="280" height="19"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
+				<reportElement x="0" y="208" width="276" height="22"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
 					<font size="7" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Av. Gral. San Martín 4215 - CP 1752 Lomas del Mirador - Pcia. Bs. As.
-	Tel. (5411)4454-2279/2395 L. Rotativas - email: leveltextil@speedy.com.ar]]></text>
+	Tel. (5411) 4454-2279/2395 L. Rotativas - email: info@textillevel.com]]></text>
 			</staticText>
 			<line>
-				<reportElement x="0" y="27" width="280" height="1"/>
+				<reportElement x="0" y="21" width="277" height="1"/>
 			</line>
 			<line>
-				<reportElement x="0" y="198" width="280" height="1"/>
+				<reportElement x="0" y="203" width="277" height="1"/>
 			</line>
 			<staticText>
-				<reportElement x="0" y="5" width="280" height="19"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="8" isBold="true"/>
+				<reportElement x="0" y="5" width="280" height="17"/>
+				<textElement textAlignment="Center" verticalAlignment="Top">
+					<font size="11" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Textil Level S.A. Tintorería y Estampería industrial]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="140" y="82" width="44" height="20"/>
+				<reportElement positionType="Float" x="17" y="119" width="56" height="14"/>
 				<textElement verticalAlignment="Top">
-					<font isUnderline="true"/>
+					<font size="10" isBold="true" isUnderline="false"/>
 				</textElement>
-				<text><![CDATA[Terminal:]]></text>
+				<text><![CDATA[TERMINAL:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="186" y="82" width="89" height="32"/>
-				<textElement verticalAlignment="Top"/>
+				<reportElement x="75" y="119" width="25" height="14"/>
+				<textElement verticalAlignment="Top">
+					<font size="10" isBold="true"/>
+				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{TERMINAL}]]></textFieldExpression>
 			</textField>
 			<image hAlign="Center">
-				<reportElement x="8" y="142" width="272" height="52"/>
+				<reportElement x="8" y="149" width="272" height="54"/>
 				<imageExpression class="java.awt.Image"><![CDATA[$P{IMAGEN}]]></imageExpression>
 			</image>
+			<staticText>
+				<reportElement x="101" y="25" width="25" height="20"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[ODT:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="83" width="277" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="48" width="277" height="1"/>
+			</line>
+			<line>
+				<reportElement x="0" y="145" width="277" height="1"/>
+			</line>
+			<rectangle>
+				<reportElement x="137" y="84" width="1" height="61"/>
+			</rectangle>
 		</band>
 	</detail>
 </jasperReport>
