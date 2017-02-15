@@ -16,7 +16,7 @@ import ar.com.fwcommon.util.MiscUtil;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
 
-public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmptyLoginManager, GTLLiteConfigClienteManager> {
+public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientLoginManager, GTLLiteConfigClienteManager> {
 
 	private static final long serialVersionUID = -7589061723941536496L;
 	protected MenuAyuda menuAyuda;
@@ -40,8 +40,8 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientEmpty
 	}
 
 	@Override
-	protected GTLLiteClientEmptyLoginManager crearLoginManager() {
-		return new GTLLiteClientEmptyLoginManager(idAplicacion);
+	protected GTLLiteClientLoginManager crearLoginManager() {
+		return new GTLLiteClientLoginManager(idAplicacion);
 	}
 
 	private void construirMenues() {

@@ -11,6 +11,7 @@ import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
 import ar.com.textillevel.entidades.to.TerminalServiceResponse;
 import ar.com.textillevel.facade.api.remote.EntregaReingresoDocumentosFacadeRemote;
 import ar.com.textillevel.facade.api.remote.RemitoSalidaFacadeRemote;
+import ar.com.textillevel.facade.api.remote.UsuarioSistemaFacadeRemote;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemote;
@@ -117,6 +118,7 @@ public class GTLLiteRemoteService {
 			addJndiName(TerminalFacadeRemote.class);
 			addJndiName(EntregaReingresoDocumentosFacadeRemote.class);
 			addJndiName(RemitoSalidaFacadeRemote.class);
+			addJndiName(UsuarioSistemaFacadeRemote.class);
 		}
 
 		public static GTLLiteBeanFactory getInstance() {
