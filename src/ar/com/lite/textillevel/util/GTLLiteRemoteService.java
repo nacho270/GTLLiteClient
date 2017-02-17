@@ -1,7 +1,11 @@
 package ar.com.lite.textillevel.util;
 
 import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.rmi.RemoteException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -50,13 +54,31 @@ public class GTLLiteRemoteService {
 
 	public static Terminal getTerminalData() {
 		try {
-			return gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(Inet4Address.getLocalHost().getHostAddress());
+			String hostAddress = getFirstNonLoopbackAddress().getHostAddress();
+			System.out.println("IP: " + hostAddress);
+			return gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(hostAddress);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
+	@SuppressWarnings("rawtypes")
+	private static InetAddress getFirstNonLoopbackAddress() throws SocketException {
+		Enumeration en = NetworkInterface.getNetworkInterfaces();
+	    while (en.hasMoreElements()) {
+	        NetworkInterface i = (NetworkInterface) en.nextElement();
+	        for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
+	            InetAddress addr = (InetAddress) en2.nextElement();
+	            if (!addr.isLoopbackAddress()) {
+	                if (addr instanceof Inet4Address) {
+	                    return addr;
+	                }
+	            }
+	        }
+	    }
+	    return null;
+	}
 	public static TerminalServiceResponse marcarEntregado(String codigo) {
 		if (codigo.endsWith("0")) {
 			return gtlBeanFactory1.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());

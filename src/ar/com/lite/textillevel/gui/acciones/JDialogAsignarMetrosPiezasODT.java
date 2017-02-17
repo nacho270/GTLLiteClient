@@ -627,7 +627,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private boolean piezaYaDividida(PiezaODT elemento) {
 			for(PiezaODT pODT : odt.getPiezas()) {
-				if(pODT.getOrden().equals(elemento.getOrden()) && pODT.getOrdenSubpieza() != null) {
+				if(pODT.getOrden() != null && elemento.getOrden() != null && pODT.getOrden().equals(elemento.getOrden()) && pODT.getOrdenSubpieza() != null) {
 					return true;
 				}
 			}
@@ -637,7 +637,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		private void ajustarSubordenes(Integer orden) {
 			for(int i=0; i<odt.getPiezas().size(); i++) {
 				PiezaODT pODT = odt.getPiezas().get(i);
-				if(pODT.getOrden().equals(orden)) {
+				if(pODT.getOrden() != null && orden != null && pODT.getOrden().equals(orden)) {
 					int j = i+1;
 					while(j<odt.getPiezas().size() && odt.getPiezas().get(j).getOrdenSubpieza() != null) {
 						odt.getPiezas().get(j).setOrdenSubpieza(j-i);

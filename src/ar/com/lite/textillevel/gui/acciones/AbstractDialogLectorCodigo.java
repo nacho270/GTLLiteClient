@@ -167,7 +167,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	                        return;
 	            		}
 	            		callback.encontrado(obj);
-	            		dispose();
+	            		reset();
                     } catch (final Throwable re) {
                     	re.printStackTrace();
                     	FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "Se ha producido un error al comunicarse con el servidor", "Error");

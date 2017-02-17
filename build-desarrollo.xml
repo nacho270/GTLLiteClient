@@ -51,6 +51,12 @@
 				<include name="ar/com/textillevel/modulos/fe/facade/api/remote/**" />
 				<include name="ar/com/textillevel/modulos/fe/to/**" />
 
+				<include name="ar/com/textillevel/modulos/terminal/facade/api/remote/**" />
+				<include name="ar/com/textillevel/modulos/terminal/entidades/**" />
+				
+				<include name="ar/com/textillevel/facade/api/remote/UsuarioSistemaFacadeRemote.class" />
+				<include name="ar/com/textillevel/entidades/portal/**" />
+
 			</fileset>
 		</jar>
 	</target>

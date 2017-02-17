@@ -41,9 +41,11 @@ public class GuiBackGTLLite extends GTLLiteClientMainTemplate {
 			System.getProperties().setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
 			System.getProperties().setProperty("cltimezone", "GMT-3");
 			if (System.getProperty("java.naming.provider.url_otro_sistema") == null) {
+//				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", "192.168.1.13:1099"); //para raspberry
 				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", "localhost:1099");
 			}
 			if (System.getProperty("java.naming.provider.url") == null) {
+//				System.getProperties().setProperty("java.naming.provider.url", "192.168.1.250:1099"); //para raspberry
 				System.getProperties().setProperty("java.naming.provider.url", "localhost:1099");
 			}
 
