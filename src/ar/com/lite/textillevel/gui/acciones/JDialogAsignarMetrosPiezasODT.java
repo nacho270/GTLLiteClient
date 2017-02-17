@@ -52,7 +52,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	private PanelTablaPieza panTablaPieza;
 	private JPanel pnlBotones;
 	private JButton btnAceptar;
-	private JButton btnCancelar;
+	private JButton btnCerrar;
 	private FWJNumericTextField txtNroRemito;
 	
 	private FWJTextField txtTotalPiezasEntrada;
@@ -243,17 +243,17 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			pnlBotones = new JPanel();
 			pnlBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pnlBotones.add(getBtnAceptar());
-			pnlBotones.add(getBtnCancelar());
+			pnlBotones.add(getBtnCerrar());
 			
-			getBtnCancelar().setEnabled(true);
+			getBtnCerrar().setEnabled(true);
 		}
 		return pnlBotones;
 	}
 
-	private JButton getBtnCancelar() {
-		if(btnCancelar == null) {
-			btnCancelar = new JButton("Cancelar");
-			btnCancelar.addActionListener(new ActionListener() {
+	private JButton getBtnCerrar() {
+		if(btnCerrar == null) {
+			btnCerrar = new JButton("Cerrar");
+			btnCerrar.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					boolean hayPiezasImpresas = getPanTablaPieza().hayPiezasImpresas();
@@ -261,7 +261,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 						acepto = false;
 						dispose();
 					} else {
-						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("Ya se han impreso piezas, si cierra la ventana los datos ingresados no seran guardados. Desea continuar"), "Pregunta");
+						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("Los datos ingresados hasta el momento ya fueron guardados ¿Está seguro que desea salir?"), "Pregunta");
 						if (respuesta == FWJOptionPane.YES_OPTION) {
 							acepto = false;
 							dispose();
@@ -272,7 +272,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			});
 
 		}
-		return btnCancelar;
+		return btnCerrar;
 	}
 
 	private JButton getBtnAceptar() {
@@ -351,7 +351,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			for(int i = 0; i < getTabla().getRowCount(); i++) {
 				String metrosStr = (String)getTabla().getValueAt(i, COL_METROS_PIEZA_ODT);
 				if(metrosStr == null || metrosStr.equals("0")) {
-					ret = "Faltan cargar metros en algunas piezas";
+					ret = "Faltan cargar metros en algunas piezas. \n Puede presionar 'Cerrar' para continuar luego";
 					break;
 				}
 			}
@@ -362,9 +362,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		protected void agregarElemento(PiezaODT elemento) {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
-			if(elemento.tieneSalida()) {
-				getTabla().lockCell(getTabla().getRowCount()-1, COL_METROS_PIEZA_ODT);
-			}
 		}
 
 		private Object[] getRow(PiezaODT elemento) {
@@ -388,8 +385,8 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				public void newRowSelected(int newRow, int oldRow) {
 					if(newRow != -1) {
 						PiezaODT piezaODT = getElemento(newRow);
-						boolean habilitarAgregar = newRow != -1 && piezaODT.getOrdenSubpieza() == null && !piezaODT.tieneSalida();
-						boolean habilitarEliminar = newRow != -1 && piezaODT.getOrdenSubpieza() != null && !piezaODT.tieneSalida();
+						boolean habilitarAgregar = newRow != -1 && piezaODT.getOrdenSubpieza() == null;
+						boolean habilitarEliminar = newRow != -1 && piezaODT.getOrdenSubpieza() != null;
 						getBtnEliminarPieza().setEnabled(habilitarEliminar);
 						if(habilitarEliminar && !habilitarAgregar) {//es una subpieza!
 							getBtnDividir().setText(TEXTO_AGREGAR_SUBPIEZA);
@@ -437,11 +434,13 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 							piezaODT.setMetros(new BigDecimal(0));
 						}
 						actualizarTotales();
+						persistParcial();
 					}
 					if(cell == COL_ES_DE_2DA) {
 						PiezaODT piezaODT = getElemento(row);
 						piezaODT.setEsDeSegunda((Boolean)getTabla().getValueAt(row, COL_ES_DE_2DA));
 						handleImprimir(piezaODT);
+						persistParcial();
 					}
 				}
 
@@ -475,6 +474,23 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			tablaPiezaEntrada.setSelectionMode(FWJTable.SINGLE_SELECTION);
 
 			return tablaPiezaEntrada;
+		}
+
+		private void persistParcial() {
+			this.odt = GTLLiteRemoteService.grabarPiezasODT(odt);
+			for(int i=0; i<getTabla().getRowCount(); i++) {
+				PiezaODT elemento = getElemento(i);
+				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents
+			}
+		}
+
+		private PiezaODT findObj(PiezaODT elemento, List<PiezaODT> piezas) {
+			for(PiezaODT pieza : piezas) {
+				if(pieza.getId().equals(elemento.getId())) {
+					return pieza;
+				}
+			}
+			throw new IllegalStateException("No se pudo recuperar la pieza persistent para " + elemento);
 		}
 
 		private void actualizarTotales() {
