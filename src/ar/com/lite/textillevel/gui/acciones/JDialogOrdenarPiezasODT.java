@@ -73,8 +73,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private boolean acepto;
 	
 	private boolean estadoModificado = false;
-	
-	private int piezaActual = 1;
+	private int ultimoOrdenIngresado = 1;
 	
 	private static final Comparator<PiezaODT> piezasComparator = new Comparator<PiezaODT>() {
 		public int compare(PiezaODT o1, PiezaODT o2) {
@@ -427,6 +426,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		protected void agregarElemento(PiezaODT elemento) {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
+			if (elemento.getOrden() != null) {
+				ultimoOrdenIngresado = elemento.getOrden();
+			}
 		}
 
 		private Object[] getRow(PiezaODT elemento) {
@@ -450,24 +452,30 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		        Object oldValue = tcl.getOldValue();
 		        Object newValue = tcl.getNewValue();
 		        if (cell == COL_ORDEN) {
+		        	int ultima = getUltimoOrdenUsado();
+		        	int piezaActual = ultima + 1;
 //		        	System.out.println("OLD: " + oldValue);
 //		        	System.out.println("NEW: " + newValue);
 //		        	System.out.println("==========");
 					Integer orden = newValue instanceof String ? Integer.valueOf((String) newValue) : (Integer) newValue;
 					Integer oldOrden = oldValue instanceof String ? Integer.valueOf((String) oldValue) : (Integer) oldValue;
+					if (oldOrden != null && oldOrden.equals(orden)) {
+						return;
+					}
 					if (orden == 0) {
 						if (oldOrden == null) {
 							blanquearCelda(cell, row);
 							return;
 						}
-						if(oldOrden != (piezaActual - 1)) {
+						if(oldOrden != ultimoOrdenIngresado) {
 							FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Solo puede borrar el ultimo valor ingresado.", "Error");
 							getTabla().setValueAt(oldOrden, row, cell);
 							return;
 						}
-						piezaActual--;
+						ultimoOrdenIngresado = ultima - 1;
 						estadoModificado = true;
 						blanquearCelda(cell, row);
+						GTLLiteRemoteService.grabarPiezasODT(odt);
 						return;
 					}
 					if (orden.intValue() != piezaActual) {
@@ -481,14 +489,34 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					}
 					PiezaODT piezaODT = getElemento(row);
 					piezaODT.setOrden(orden);
+					ultimoOrdenIngresado = orden;
 					odt.getPiezas().set(row, piezaODT);
 					estadoModificado = true;
 					limpiar();
 					Collections.sort(odt.getPiezas(), piezasComparator);
-					piezaActual++;
 					agregarElementos(odt.getPiezas());
+					GTLLiteRemoteService.grabarPiezasODT(odt);
 				}
 		    }
+			
+			private int getUltimoOrdenUsado() {
+				List<Integer> ordenes = Lists.newArrayList();
+				for (int i = 0; i < getTabla().getRowCount(); i++) {
+					PiezaODT piezaODT = getElemento(i);
+					if (piezaODT.getOrden() != null) {
+						ordenes.add(piezaODT.getOrden());
+					}
+				}
+				Collections.sort(ordenes);
+				for (int i = 0; i<ordenes.size() -1;i++) {
+					int ordenActual = ordenes.get(i);
+					int ordenSig = ordenes.get(i + 1);
+					if (ordenActual + 1 != ordenSig) { // hay un gap
+						return ordenActual;
+					}
+				}
+				return ordenes.get(ordenes.size() - 1);
+			}
 			
 			private void blanquearCelda(int cell, int row) {
 				try {
