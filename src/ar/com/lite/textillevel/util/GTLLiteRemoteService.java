@@ -122,14 +122,25 @@ public class GTLLiteRemoteService {
 	}
 	
 	public static void marcarRemitoSalidaComoControlado(String idSistema, RemitoSalida rs) {
+		String nombreTerminal = GTLLiteGlobalCache.getInstance().getTerminalData().getNombre();
 		if("0".equals(idSistema)) {//es la A
-			gtlBeanFactory1.getBean2(RemitoSalidaFacadeRemote.class).marcarRemitoSalidaComoControlado(rs);
+			gtlBeanFactory1.getBean2(RemitoSalidaFacadeRemote.class).marcarRemitoSalidaComoControlado(rs, nombreTerminal);
 		}
 		if("1".equals(idSistema)) {//es la B
-			gtlBeanFactory2.getBean2(RemitoSalidaFacadeRemote.class).marcarRemitoSalidaComoControlado(rs);
+			gtlBeanFactory2.getBean2(RemitoSalidaFacadeRemote.class).marcarRemitoSalidaComoControlado(rs, nombreTerminal);
 		}
 	}
 
+	public static RemitoSalida guardarRemitoSalida(String idSistema, RemitoSalida rs) {
+		if("0".equals(idSistema)) {//es la A
+			return gtlBeanFactory1.getBean2(RemitoSalidaFacadeRemote.class).guardarRemito(rs);
+		}
+		if("1".equals(idSistema)) {//es la B
+			return gtlBeanFactory2.getBean2(RemitoSalidaFacadeRemote.class).guardarRemito(rs);
+		}
+		return null;
+	}
+	
 	public static class GTLLiteBeanFactory extends BeanFactoryRemoteAbstract {
 
 		private static GTLLiteBeanFactory instance;

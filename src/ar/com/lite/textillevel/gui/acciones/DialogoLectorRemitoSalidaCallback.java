@@ -2,9 +2,15 @@ package ar.com.lite.textillevel.gui.acciones;
 
 import java.awt.Frame;
 
+import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.util.GuiUtil;
+import ar.com.lite.textillevel.gui.util.JDialogPasswordInput;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
+import ar.com.lite.textillevel.util.GTLLiteRemoteService.GTLLiteBeanFactory;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
+import ar.com.textillevel.entidades.portal.UsuarioSistema;
+import ar.com.textillevel.facade.api.remote.UsuarioSistemaFacadeRemote;
+import main.GTLLiteGlobalCache;
 
 public class DialogoLectorRemitoSalidaCallback implements DialogLectorCodigoCallback<RemitoSalida> {
 
@@ -36,7 +42,23 @@ public class DialogoLectorRemitoSalidaCallback implements DialogLectorCodigoCall
 	@Override
 	public String validar(RemitoSalida rs) {
 		if(rs.getControlado() != null && rs.getControlado()) {
-			return "No se puede realizar esta operación, el remito ya fue controlado.";
+			if(GTLLiteGlobalCache.getInstance().getUsuarioSistema().getPerfil().getIsAdmin()) {
+				return null;
+			} else {
+				UsuarioSistema usrAdmin = null;
+				do {
+					JDialogPasswordInput jDialogPasswordInput = new JDialogPasswordInput(owner, "Lectura de Remito");
+					boolean acepto = jDialogPasswordInput.isAcepto();
+					if (!acepto) {
+						return "Operación Cancelada";
+					}
+					String pass = new String(jDialogPasswordInput.getPassword());
+					usrAdmin = GTLLiteBeanFactory.getInstance().getBean2(UsuarioSistemaFacadeRemote.class).esPasswordDeAdministrador(pass);
+					if (usrAdmin == null) {
+						FWJOptionPane.showErrorMessage(owner, "La clave ingresada no peternece a un usuario administrador", "Error");
+					}
+				} while (usrAdmin == null);
+			}
 		}
 		return null;
 	}

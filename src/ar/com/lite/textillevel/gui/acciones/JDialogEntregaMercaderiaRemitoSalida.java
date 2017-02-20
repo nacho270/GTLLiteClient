@@ -40,6 +40,7 @@ import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.entidades.documentos.remito.PiezaRemito;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
+import ar.com.textillevel.entidades.documentos.remito.enums.EEstadoControlPiezaRemitoSalida;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
@@ -52,7 +53,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 	private PanelTablaPieza panTablaPieza;
 	private JPanel pnlBotones;
 	private JButton btnAceptar;
-	private JButton btnCancelar;
+	private JButton btnCerrar;
 	private FWJNumericTextField txtNroRemito;
 	
 	private FWDateField txtFechaEmision;
@@ -273,27 +274,30 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 			pnlBotones = new JPanel();
 			pnlBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pnlBotones.add(getBtnAceptar());
-			pnlBotones.add(getBtnCancelar());
+			pnlBotones.add(getBtnCerrar());
 			
-			getBtnCancelar().setEnabled(true);
+			getBtnCerrar().setEnabled(true);
 		}
 		return pnlBotones;
 	}
 
-	private JButton getBtnCancelar() {
-		if(btnCancelar == null) {
-			btnCancelar = new JButton("Cancelar");
-			btnCancelar.addActionListener(new ActionListener() {
+	private JButton getBtnCerrar() {
+		if(btnCerrar == null) {
+			btnCerrar = new JButton("Cerrar");
+			btnCerrar.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					acepto = false;
-					dispose();
+					int respuesta = FWJOptionPane.showQuestionMessage(JDialogEntregaMercaderiaRemitoSalida.this, StringW.wordWrap("Los datos controlados hasta el momento ya fueron guardados ¿Está seguro que desea salir?"), "Pregunta");
+					if (respuesta == FWJOptionPane.YES_OPTION) {
+						acepto = false;
+						dispose();
+					}
 				}
 
 			});
 
 		}
-		return btnCancelar;
+		return btnCerrar;
 	}
 
 	private JButton getBtnAceptar() {
@@ -340,6 +344,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 
 	private void piezaEncontrada(PiezaODT piezaODT) {
 		getPanTablaPieza().handlePiezaEncontrada(piezaODT);
+		
 	}
 
 	private class PanelTablaPieza extends PanelTabla<PiezaRemito> {
@@ -355,7 +360,6 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 		private static final int CANT_COLS = COL_OBJ + 1;
 
 		private JButton btnImprimir;
-		private Map<PiezaRemito, Boolean> mapYaControladas = new HashMap<>();
 		private Map<PiezaRemito, Boolean> mapReImpresas = new HashMap<>();
 
 		public PanelTablaPieza(RemitoSalida rs) {
@@ -368,17 +372,28 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 		public void handlePiezaEncontrada(PiezaODT piezaODT) {
 			int row = findFilaPiezaRSByPiezaODT(piezaODT);
 			PiezaRemito pr = getElemento(row);
-			mapYaControladas.put(pr, true);
 			getTabla().setValueAt(piezaODT.getMetros(), row, COL_METROS_PIEZA_ODT);
 			if(pr.getMetros().equals(piezaODT.getMetros())) {//Ok pinto de verde
-				getTabla().setValueAt("<html><div style=\"padding:2px 0px; background-color:green\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></html>", row, COL_STATUS_CONTROL);
+				getTabla().setValueAt(getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida.MTS_OK_CONTROLADA), row, COL_STATUS_CONTROL);
+				pr.setEstadoControl(EEstadoControlPiezaRemitoSalida.MTS_OK_CONTROLADA);
 			} else {//Diferente => pinto de rojo y pregunto si quiere imprimir
-				getTabla().setValueAt("<html><body style=\"background-color:red\"><div style=\"padding:2px 0px\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO OK &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></body></html>", row, COL_STATUS_CONTROL);
+				getTabla().setValueAt(getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida.MTS_NO_OK_NO_IMPRESA), row, COL_STATUS_CONTROL);
 				JDialogEntregaMercaderiaRemitoSalida.this.alertMostrandose = true;
 				if(FWJOptionPane.showQuestionMessage(JDialogEntregaMercaderiaRemitoSalida.this, StringW.wordWrap("Los metros de la pieza difieren con respecto a los metros de salida ¿Desea imprimirla nuevamente?"), "Atención") == FWJOptionPane.YES_OPTION) {
 					getPanTablaPieza().handleImprimir(pr.getMetros(), piezaODT);
-					return;
+					pr.setEstadoControl(EEstadoControlPiezaRemitoSalida.MTS_NO_OK_REIMPRESA);
+				} else {
+					pr.setEstadoControl(EEstadoControlPiezaRemitoSalida.MTS_NO_OK_NO_IMPRESA);
 				}
+			}
+			//persisto
+			guardarRemitoSalida();
+		}
+
+		private void guardarRemitoSalida() {
+			JDialogEntregaMercaderiaRemitoSalida.this.rs = GTLLiteRemoteService.guardarRemitoSalida(idSistema, rs);
+			for(int i=0; i<getTabla().getRowCount(); i++) {
+				getTabla().setValueAt(rs.getPiezas().get(i), i, COL_OBJ);
 			}
 		}
 
@@ -396,9 +411,6 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 			if(!todasFueronControladas()) {
 				return "Faltan controlar piezas.";
 			}
-			if(!todasLasErroneasFueronReImpresas()) {
-				return "Existen piezas con metros diferentes a los de salida que no fueron re impresas";
-			}
 			return null;
 		}
 
@@ -414,7 +426,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 			row[COL_NRO_PIEZA] = elemento.toString();
 			row[COL_METROS_PIEZA_SALIDA] = pr.getMetros();
 			row[COL_METROS_PIEZA_ODT] = null;
-			row[COL_STATUS_CONTROL] = "<html><div style=\"padding:2px 0px; background-color:gray\"><b>PENDIENTE</b></div></html>";
+			row[COL_STATUS_CONTROL] = getTextoEstadoControlTabla(pr.getEstadoControl());
 			row[COL_ES_DE_2DA] = elemento.getEsDeSegunda() != null && elemento.getEsDeSegunda();
 			row[COL_OBJ] = pr;
 			return row;
@@ -429,11 +441,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 
 				@Override
 				public void newRowSelected(int newRow, int oldRow) {
-					if(newRow != -1) {
-						getBtnImprimir().setEnabled(true);
-					} else {
-						getBtnImprimir().setEnabled(false);
-					}
+					getBtnImprimir().setEnabled(newRow != -1);
 				}
 
 			};
@@ -470,7 +478,9 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 			new ImprimirCodigoPiezaODTHandler(piezaODT).imprimir();
 			piezaODT.setMetros(mtsOriganles); //undo
 			if(teniaDiferenciaEnMts) {
-				getTabla().setValueAt("<html><div style=\"padding:2px 0px; background-color:green\"><b>OK-IMPR.&nbsp;&nbsp;&nbsp;&nbsp;</b></div></html>", row, COL_STATUS_CONTROL);
+				getTabla().setValueAt(getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida.MTS_NO_OK_REIMPRESA), row, COL_STATUS_CONTROL);
+			} else {
+				getTabla().setValueAt(getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida.MTS_OK_CONTROLADA), row, COL_STATUS_CONTROL);
 			}
 		}
 
@@ -508,26 +518,40 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 					public void actionPerformed(ActionEvent e) {
 						PiezaRemito elemento = getElemento(getTabla().getSelectedRow());
 						handleImprimir(elemento.getMetros(), elemento.getPiezaPadreODT());
+						guardarRemitoSalida();
 					}
 
 				});
+
 			}
 			return btnImprimir;
 		}
 
 		private boolean todasFueronControladas() {
-			return mapYaControladas.keySet().size() == rs.getPiezas().size();
-		}
-
-		private boolean todasLasErroneasFueronReImpresas() {
-			int cantErroneas = 0;
-			for(int i=0; i < getTabla().getRowCount(); i++) {
-				PiezaRemito pr = getElemento(i);
-				cantErroneas += !pr.getMetros().equals(pr.getPiezaPadreODT().getMetros()) ? 1 : 0;
+			for(PiezaRemito pr : rs.getPiezas()) {
+				if(pr.getEstadoControl() == null || pr.getEstadoControl() == EEstadoControlPiezaRemitoSalida.PENDIENTE) {
+					return false;
+				}
 			}
-			return cantErroneas == mapReImpresas.keySet().size();
+			return true;
 		}
-		
+	
+		private String getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida estadoControl) {
+			if(estadoControl == null || estadoControl == EEstadoControlPiezaRemitoSalida.PENDIENTE) {
+				return "<html><div style=\"padding:2px 0px; background-color:gray\"><b>PENDIENTE</b></div></html>";
+			}
+			if(estadoControl == EEstadoControlPiezaRemitoSalida.MTS_OK_CONTROLADA) {
+				return "<html><div style=\"padding:2px 0px; background-color:green\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;OK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></html>";
+			}
+			if(estadoControl == EEstadoControlPiezaRemitoSalida.MTS_NO_OK_REIMPRESA) {
+				return "<html><div style=\"padding:2px 0px; background-color:green\"><b>OK-IMPR.&nbsp;&nbsp;&nbsp;&nbsp;</b></div></html>";				
+			}
+			if(estadoControl == EEstadoControlPiezaRemitoSalida.MTS_NO_OK_NO_IMPRESA) {
+				return "<html><body style=\"background-color:red\"><div style=\"padding:2px 0px\"><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;NO OK &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></div></body></html>"; 
+			}
+			throw new IllegalArgumentException("Entrada para el enum " + EEstadoControlPiezaRemitoSalida.class.getName() + " inválida " + estadoControl);
+		}
+	
 	}
 
 }
