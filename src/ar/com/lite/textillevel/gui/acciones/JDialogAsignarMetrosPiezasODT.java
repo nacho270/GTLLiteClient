@@ -23,11 +23,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
-import org.apache.taglibs.string.util.StringW;
+import main.GTLLiteGlobalCache;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import org.apache.taglibs.string.util.StringW;
 
 import ar.com.fwcommon.componentes.FWDateField;
 import ar.com.fwcommon.componentes.FWJNumericTextField;
@@ -43,6 +41,10 @@ import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
@@ -284,7 +286,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 					if(validar()) {
 						acepto = true;
 						odt.setEstadoODT(EEstadoODT.EN_OFICINA);
-						GTLLiteRemoteService.grabarPiezasODT(odt);
+						GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 						dispose();
 					}
 					return;
@@ -477,7 +479,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private void persistParcial() {
-			this.odt = GTLLiteRemoteService.grabarPiezasODT(odt);
+			this.odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				PiezaODT elemento = getElemento(i);
 				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents

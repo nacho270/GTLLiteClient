@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 
+import main.GTLLiteGlobalCache;
+
 import org.apache.taglibs.string.util.StringW;
 
 import ar.com.fwcommon.componentes.FWDateField;
@@ -315,7 +317,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 	private void grabarEImprimir() {
 		if (estadoModificado) {
-			GTLLiteRemoteService.grabarPiezasODT(odt);
+			odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 			estadoModificado = false;
 		}
 		new ImpresionODTHandler(odt, this).imprimir();
@@ -475,7 +477,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						ultimoOrdenIngresado = ultima - 1;
 						estadoModificado = true;
 						blanquearCelda(cell, row);
-						GTLLiteRemoteService.grabarPiezasODT(odt);
+						odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 						return;
 					}
 					if (orden.intValue() != piezaActual) {
@@ -495,7 +497,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					limpiar();
 					Collections.sort(odt.getPiezas(), piezasComparator);
 					agregarElementos(odt.getPiezas());
-					GTLLiteRemoteService.grabarPiezasODT(odt);
+					odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 				}
 		    }
 			
@@ -506,6 +508,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					if (piezaODT.getOrden() != null) {
 						ordenes.add(piezaODT.getOrden());
 					}
+				}
+				if (ordenes.isEmpty()) {
+					return 0;
 				}
 				Collections.sort(ordenes);
 				for (int i = 0; i<ordenes.size() -1;i++) {

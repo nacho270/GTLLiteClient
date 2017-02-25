@@ -9,9 +9,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import main.GTLLiteGlobalCache;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
+import ar.com.textillevel.entidades.portal.UsuarioSistema;
 import ar.com.textillevel.entidades.to.TerminalServiceResponse;
 import ar.com.textillevel.facade.api.remote.EntregaReingresoDocumentosFacadeRemote;
 import ar.com.textillevel.facade.api.remote.RemitoSalidaFacadeRemote;
@@ -22,7 +24,6 @@ import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemo
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
 import ar.com.textillevel.modulos.terminal.facade.api.remote.TerminalFacadeRemote;
 import ar.com.textillevel.util.GestorTerminalBarcode;
-import main.GTLLiteGlobalCache;
 
 public class GTLLiteRemoteService {
 
@@ -38,16 +39,16 @@ public class GTLLiteRemoteService {
 		}
 	}
 
-	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt) {
+	public static OrdenDeTrabajo grabarPiezasODT(OrdenDeTrabajo odt, UsuarioSistema usuarioSistema) {
 		// consulto en el primero
 		OrdenDeTrabajo odtCheck = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
 		if (odtCheck != null) {// estaba en el primero => grabo ahí
-			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt, usuarioSistema);
 		}
 		// consulto en el segundo
 		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
 		if (odtCheck != null) {// estaba en el segundo => grabo ahí
-			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt);
+			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarPiezasODT(odt, usuarioSistema);
 		}
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
 	}
