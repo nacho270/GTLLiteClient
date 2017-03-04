@@ -72,7 +72,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private FWJTextField txtTotalMetrosEntrada;
 	private JPanel panelDatosCliente;
 	private JPanel panelDatosFactura;
-	private boolean acepto;
 	
 	private boolean estadoModificado = false;
 	private int ultimoOrdenIngresado = 1;
@@ -287,7 +286,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					int respuesta = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("Ya se han impreso piezas, si cierra la ventana los datos ingresados no seran guardados. Desea continuar"), "Pregunta");
 					if (respuesta == FWJOptionPane.YES_OPTION) {
-						acepto = false;
 						dispose();
 					}
 				}
@@ -303,7 +301,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 				public void actionPerformed(ActionEvent e) {
 					if (validar()) {
-						acepto = true;
 						grabarEImprimir();
 						dispose();
 					}
@@ -317,10 +314,14 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 	private void grabarEImprimir() {
 		if (estadoModificado) {
-			odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
-			estadoModificado = false;
+			if (validar()) {
+				odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+				estadoModificado = false;
+				new ImpresionODTHandler(odt, this).imprimir();
+			}
+		} else if (validar()) {
+			new ImpresionODTHandler(odt, this).imprimir();
 		}
-		new ImpresionODTHandler(odt, this).imprimir();
 	}
 
 	private JButton getBtnImprimir() {
@@ -356,10 +357,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			panTablaPieza = new PanelTablaPieza(odt);
 		}
 		return panTablaPieza;
-	}
-
-	public boolean isAceptpo() {
-		return acepto;
 	}
 
 	private class PanelTablaPieza extends PanelTabla<PiezaODT> {
