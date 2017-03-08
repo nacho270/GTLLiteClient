@@ -40,6 +40,7 @@ import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
+import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 
 import com.google.common.base.Optional;
@@ -92,7 +93,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		remitoEntrada.getProductoArticuloList().clear();
 		Cliente cliente = remitoEntrada.getCliente();
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
-		getTxtProducto().setText(odt.getProductoArticulo().toString());
+		getTxtProducto().setText(odt.getCodigo() + " / " + odt.getProductoArticulo().toString());
 		if(cliente.getDireccionReal() != null) {
 			getTxtNroCliente().setText(cliente.getNroCliente()+"");
 		}
@@ -285,8 +286,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if(validar()) {
 						acepto = true;
-						odt.setEstadoODT(EEstadoODT.EN_OFICINA);
-						GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+						GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 						dispose();
 					}
 					return;
@@ -416,12 +416,14 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 										@Override
 										public void run() {
 											if(FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, "¿Está seguro que desea ingresar esa cantidad de metros?", "Atención") == FWJOptionPane.YES_OPTION) {
-												piezaODT.setMetros(metrosNew);
+												cambiarMetros(row, metrosNew);
 												handleImprimir(piezaODT);
 											} else {
 												setValueAt(null, row, COL_METROS_PIEZA_ODT);
+												cambiarMetros(row, null);
 											}
 										}
+
 									});
 							} else{
 								piezaODT.setMetros(metrosNew);
@@ -444,6 +446,10 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 						handleImprimir(piezaODT);
 						persistParcial();
 					}
+				}
+
+				private void cambiarMetros(int row, BigDecimal metrosNew) {
+					getElemento(row).setMetros(metrosNew);
 				}
 
 				private void handleImprimir(PiezaODT piezaODT) {
@@ -479,7 +485,8 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private void persistParcial() {
-			this.odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			JDialogAsignarMetrosPiezasODT.this.odt = odt;
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				PiezaODT elemento = getElemento(i);
 				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents

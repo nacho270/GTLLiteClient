@@ -43,6 +43,8 @@ import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
+import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
+import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 
 import com.google.common.collect.Lists;
 
@@ -92,6 +94,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		super(owner);
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
+//		setSize(new Dimension(590, 600)); //para rasperry
 		setSize(new Dimension(630, 750));
 		setTitle("Cosido");
 		construct();
@@ -105,7 +108,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		Cliente cliente = remitoEntrada.getCliente();
 		getTxtRazonSocial().setText(cliente.getRazonSocial());
 		getTxtFechaEmision().setFecha(remitoEntrada.getFechaEmision());
-		getTxtProducto().setText(odt.getProductoArticulo().toString());
+		getTxtProducto().setText(odt.getCodigo() + " / " + odt.getProductoArticulo().toString());
 		if (cliente.getDireccionReal() != null) {
 			getTxtNroCliente().setText(cliente.getNroCliente()+"");
 		}
@@ -315,7 +318,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private void grabarEImprimir() {
 		if (estadoModificado) {
 			if (validar()) {
-				odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+				odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 				estadoModificado = false;
 				new ImpresionODTHandler(odt, this).imprimir();
 			}
@@ -474,7 +477,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						ultimoOrdenIngresado = ultima - 1;
 						estadoModificado = true;
 						blanquearCelda(cell, row);
-						odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+						odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 						return;
 					}
 					if (orden.intValue() != piezaActual) {
@@ -494,7 +497,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					limpiar();
 					Collections.sort(odt.getPiezas(), piezasComparator);
 					agregarElementos(odt.getPiezas());
-					odt = GTLLiteRemoteService.grabarPiezasODT(odt, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+					odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 				}
 		    }
 			
