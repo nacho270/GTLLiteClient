@@ -23,9 +23,11 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
-import main.GTLLiteGlobalCache;
-
 import org.apache.taglibs.string.util.StringW;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import ar.com.fwcommon.componentes.FWDateField;
 import ar.com.fwcommon.componentes.FWJNumericTextField;
@@ -42,10 +44,7 @@ import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import main.GTLLiteGlobalCache;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
@@ -303,6 +302,12 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap(msgValidacionPiezas), "Error");
 			return false;
 		}
+		for(PiezaODT p : odt.getPiezas()) {
+			if(p.getMetros() == null || p.getMetros().floatValue() <= 0f) {
+				FWJOptionPane.showErrorMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("Faltan cargar metros en algunas piezas. \n Puede presionar 'Cerrar' para continuar luego"), "Error");
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -328,7 +333,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		private static final int COL_ES_DE_2DA = 3;
 		private static final int COL_OBJ = 4;
 
-		private OrdenDeTrabajo odt;
 		private boolean reversed = false;		
 		private JButton btnRevertir;
 		private JButton btnDividir;
@@ -342,7 +346,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			agregarBoton(getBtnDividir());
 			agregarBoton(getBtnEliminarPieza());
 			agregarBoton(getBtnRevertir());
-			this.odt = odt;
 			Collections.sort(odt.getPiezas());
 			agregarElementos(odt.getPiezas());
 			actualizarTotales();
@@ -417,11 +420,13 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 										public void run() {
 											if(FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, "¿Está seguro que desea ingresar esa cantidad de metros?", "Atención") == FWJOptionPane.YES_OPTION) {
 												cambiarMetros(row, metrosNew);
-												handleImprimir(piezaODT);
+												handleImprimir(row);
 											} else {
 												setValueAt(null, row, COL_METROS_PIEZA_ODT);
 												cambiarMetros(row, null);
 											}
+											actualizarTotales();
+											persistParcial();
 										}
 
 									});
@@ -430,20 +435,22 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 								SwingUtilities.invokeLater(new Runnable() {
 									@Override
 									public void run() {
-										handleImprimir(piezaODT);
+										handleImprimir(row);
 									}
 								});
+								actualizarTotales();
+								persistParcial();
 							}
 						} else {
 							piezaODT.setMetros(new BigDecimal(0));
+							actualizarTotales();
+							persistParcial();
 						}
-						actualizarTotales();
-						persistParcial();
 					}
 					if(cell == COL_ES_DE_2DA) {
 						PiezaODT piezaODT = getElemento(row);
 						piezaODT.setEsDeSegunda((Boolean)getTabla().getValueAt(row, COL_ES_DE_2DA));
-						handleImprimir(piezaODT);
+						handleImprimir(row);
 						persistParcial();
 					}
 				}
@@ -452,7 +459,8 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 					getElemento(row).setMetros(metrosNew);
 				}
 
-				private void handleImprimir(PiezaODT piezaODT) {
+				private void handleImprimir(int row) {
+					PiezaODT piezaODT = getElemento(row);
 					boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.toString())).or(false).booleanValue();
 					if (piezaImpresa && piezaODT.getMetros() != null && piezaODT.getMetros().floatValue() > 0f) {
 						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("La pieza Nro. " + piezaODT.toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
@@ -485,8 +493,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private void persistParcial() {
-			this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
-			JDialogAsignarMetrosPiezasODT.this.odt = odt;
+			JDialogAsignarMetrosPiezasODT.this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				PiezaODT elemento = getElemento(i);
 				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents
