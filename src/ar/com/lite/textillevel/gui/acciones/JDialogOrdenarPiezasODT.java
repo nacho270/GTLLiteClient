@@ -11,12 +11,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -34,10 +37,10 @@ import ar.com.fwcommon.componentes.FWJNumericTextField;
 import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.componentes.FWJTable;
 import ar.com.fwcommon.componentes.FWJTextField;
-import ar.com.fwcommon.componentes.PanelTabla;
+import ar.com.fwcommon.componentes.PanelTablaSubirBajarModificar;
 import ar.com.fwcommon.util.GuiUtil;
+import ar.com.fwcommon.util.StringUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
-import ar.com.lite.textillevel.gui.util.TableCellListener;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.entidades.documentos.remito.RemitoEntrada;
 import ar.com.textillevel.entidades.gente.Cliente;
@@ -75,8 +78,11 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private JPanel panelDatosCliente;
 	private JPanel panelDatosFactura;
 	
+	private FWJNumericTextField txtMetrosABuscar;
+	private JButton btnBuscarPorMetros;
+	
 	private boolean estadoModificado = false;
-	private int ultimoOrdenIngresado = 1;
+	private int ultimoOrdenIngresado = 0;
 	
 	private static final Comparator<PiezaODT> piezasComparator = new Comparator<PiezaODT>() {
 		public int compare(PiezaODT o1, PiezaODT o2) {
@@ -100,7 +106,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		construct();
 		setDatos();
 		setModal(true);
-		getPanTablaPieza().initEdition();
+		getPanTablaPieza().habilitarBotones(0);
 	}
 
 	private void setDatos() {
@@ -112,6 +118,13 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		if (cliente.getDireccionReal() != null) {
 			getTxtNroCliente().setText(cliente.getNroCliente()+"");
 		}
+		refreshTable();
+	}
+
+	private void refreshTable() {
+		getPanTablaPieza().limpiar();
+		Collections.sort(odt.getPiezas(), piezasComparator);
+		getPanTablaPieza().agregarElementos(odt.getPiezas());
 	}
 
 	private void construct() {
@@ -156,6 +169,57 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		return txtMetros;
 	}
 
+	private FWJNumericTextField getTxtMetrosABuscar() {
+		if (txtMetrosABuscar == null) {
+			txtMetrosABuscar = new FWJNumericTextField(0l, 99999l);
+			txtMetrosABuscar.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyPressed(KeyEvent e) {
+					if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+						getBtnBuscarPorMetros().doClick();
+					}
+				}
+			});
+		}
+		return txtMetrosABuscar;
+	}
+
+	private JButton getBtnBuscarPorMetros() {
+		if (btnBuscarPorMetros == null) {
+			btnBuscarPorMetros = new JButton("Ingresar");
+			btnBuscarPorMetros.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(StringUtil.isNullOrEmpty(getTxtMetrosABuscar().getText())) {
+						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Debe ingresar los metros a buscar", "Error");
+						return;
+					}
+					BigDecimal metrosABuscar = new BigDecimal(getTxtMetrosABuscar().getText());
+					boolean piezaEncontrada = false;
+					for(PiezaODT podt : odt.getPiezas()) {
+						if (podt.getOrden() != null) {
+							continue;
+						}
+						if (podt.getPiezaRemito().getMetros().compareTo(metrosABuscar) == 0) {
+							podt.setOrden(++ultimoOrdenIngresado);
+							piezaEncontrada = true;
+							break;
+						}
+					}
+					if (!piezaEncontrada) {
+						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "No se ha encontrado una pieza con los metros ingresados", "Error");
+						return;
+					}
+					getTxtMetrosABuscar().setText("");
+					odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+					refreshTable();
+				}
+			});
+		}
+		return btnBuscarPorMetros;
+	}
+
 	private JPanel getPanDetalle() {
 		if (panDetalle == null) {
 			panDetalle = new JPanel();
@@ -163,8 +227,11 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			panDetalle.add(getPanelDatosCliente(), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 6, 1, 0, 0));
 			panDetalle.add(getPanelDatosFactura(), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 6, 1, 0, 0));
 			panDetalle.add(new JLabel(" ODT:"), GenericUtils.createGridBagConstraints(0, 2, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panDetalle.add(getTxtProducto(), GenericUtils.createGridBagConstraints(1, 2, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
-			panDetalle.add(getPanTablaPieza(), GenericUtils.createGridBagConstraints(0, 3, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 6, 1, 1, 1));
+			panDetalle.add(getTxtProducto(), GenericUtils.createGridBagConstraints(1, 2, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 2, 1, 0.5, 0));
+			panDetalle.add(new JLabel("Metros: "), GenericUtils.createGridBagConstraints(0, 3, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
+			panDetalle.add(getTxtMetrosABuscar(), GenericUtils.createGridBagConstraints(1, 3, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.3, 0));
+			panDetalle.add(getBtnBuscarPorMetros(), GenericUtils.createGridBagConstraints(2, 3, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
+			panDetalle.add(getPanTablaPieza(), GenericUtils.createGridBagConstraints(0, 4, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 6, 1, 1, 1));
 		}
 		GuiUtil.setEstadoPanel(panDetalle, true);
 		return panDetalle;
@@ -362,7 +429,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		return panTablaPieza;
 	}
 
-	private class PanelTablaPieza extends PanelTabla<PiezaODT> {
+	private class PanelTablaPieza extends PanelTablaSubirBajarModificar<PiezaODT> {
 
 		private static final long serialVersionUID = 5214170341731673564L;
 
@@ -373,18 +440,71 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		private static final int COL_OBJ = 3;
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
-			Collections.sort(odt.getPiezas(), piezasComparator);
-			new TableCellListener(getTabla(), action);
-			agregarElementos(odt.getPiezas());
-			getBotonAgregar().setVisible(false);
-			getBotonEliminar().setVisible(false);
+			getBotonModificar().setVisible(false);
 		}
 
-		public void initEdition() {
-			getTabla().changeSelection(0, COL_ORDEN, false, false);
-			getTabla().requestFocus();
+		@Override
+		protected FWJTable construirTabla() {
+			final FWJTable tablaPiezaEntrada = new FWJTable(0, CANT_COLS);
+			tablaPiezaEntrada.addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					habilitarBotones(getTabla().getSelectedRow());
+				}
+			});
+			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 150, 150, true);
+			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 150, true);
+			tablaPiezaEntrada.setIntColumn(COL_ORDEN, "ORDEN", 90, true);
+			tablaPiezaEntrada.setAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setAlignment(COL_ORDEN, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setHeaderAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setHeaderAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setHeaderAlignment(COL_ORDEN, FWJTable.CENTER_ALIGN);
+			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
+			tablaPiezaEntrada.setReorderingAllowed(false);
+			tablaPiezaEntrada.setAllowSorting(true);
+//			tablaPiezaEntrada.setCellSelectionEnabled(true);
+			return tablaPiezaEntrada;
 		}
 
+		@Override
+		protected void botonBajarPresionado() {
+			int selectedRow = getTabla().getSelectedRow();
+			PiezaODT piezaABajar = getElemento(selectedRow);
+			piezaABajar.setOrden(piezaABajar.getOrden() + 1);
+			PiezaODT piezaASubir = getElemento(selectedRow + 1);
+			piezaASubir.setOrden(piezaASubir.getOrden() - 1);
+			odt.getPiezas().set(selectedRow, piezaASubir);
+			odt.getPiezas().set(selectedRow + 1, piezaABajar);
+			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			refreshTable();
+			getTabla().setRowSelectionInterval(selectedRow + 1, selectedRow + 1);
+			habilitarBotones(selectedRow + 1);
+		}
+
+		@Override
+		protected void botonSubirPresionado() {
+			int selectedRow = getTabla().getSelectedRow();
+			PiezaODT piezaASubir = getElemento(selectedRow);
+			piezaASubir.setOrden(piezaASubir.getOrden() - 1);
+			PiezaODT piezaABajar = getElemento(selectedRow - 1);
+			piezaABajar.setOrden(piezaABajar.getOrden() + 1);
+			odt.getPiezas().set(selectedRow, piezaASubir);
+			odt.getPiezas().set(selectedRow - 1, piezaABajar);
+			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			refreshTable();
+			getTabla().setRowSelectionInterval(selectedRow - 1, selectedRow - 1);
+			habilitarBotones(selectedRow - 1);
+		}
+		
+		private void habilitarBotones(int rowSelected) {
+			getBotonSubir().setEnabled(rowSelected>0);
+			getBotonBajar().setEnabled(rowSelected<getTabla().getRowCount()-1 && 
+					getElemento(rowSelected + 1) != null && 
+					getElemento(rowSelected + 1).getOrden() != null);
+		}
+		
 		public String validar() {
 			String ret = null;
 			List<Integer> ordenes = Lists.newArrayList();
@@ -444,116 +564,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			return row;
 		}
 
-		final Action action = new AbstractAction() {
-			private static final long serialVersionUID = -669955720006155056L;
-
-			public void actionPerformed(ActionEvent e) {
-		        TableCellListener tcl = (TableCellListener)e.getSource();
-		        int row = tcl.getRow();
-		        int cell = tcl.getColumn();
-		        Object oldValue = tcl.getOldValue();
-		        Object newValue = tcl.getNewValue();
-		        if (cell == COL_ORDEN) {
-		        	int ultima = getUltimoOrdenUsado();
-		        	int piezaActual = ultima + 1;
-//		        	System.out.println("OLD: " + oldValue);
-//		        	System.out.println("NEW: " + newValue);
-//		        	System.out.println("==========");
-					Integer orden = newValue instanceof String ? Integer.valueOf((String) newValue) : (Integer) newValue;
-					Integer oldOrden = oldValue instanceof String ? Integer.valueOf((String) oldValue) : (Integer) oldValue;
-					if (oldOrden != null && oldOrden.equals(orden)) {
-						return;
-					}
-					if (orden == 0) {
-						if (oldOrden == null) {
-							blanquearCelda(cell, row);
-							return;
-						}
-						if(oldOrden != ultimoOrdenIngresado) {
-							FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Solo puede borrar el ultimo valor ingresado.", "Error");
-							getTabla().setValueAt(oldOrden, row, cell);
-							return;
-						}
-						ultimoOrdenIngresado = ultima - 1;
-						estadoModificado = true;
-						blanquearCelda(cell, row);
-						odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
-						return;
-					}
-					if (orden.intValue() != piezaActual) {
-						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Debe ingresar la pieza " + piezaActual + ".", "Error");
-						blanquearCelda(cell, row);
-						getTabla().setEditingRow(row);
-						getTabla().setEditingColumn(cell);
-						getTabla().changeSelection(row, COL_ORDEN, false, false);
-						getTabla().requestFocus();
-						return;
-					}
-					PiezaODT piezaODT = getElemento(row);
-					piezaODT.setOrden(orden);
-					ultimoOrdenIngresado = orden;
-					odt.getPiezas().set(row, piezaODT);
-					estadoModificado = true;
-					limpiar();
-					Collections.sort(odt.getPiezas(), piezasComparator);
-					agregarElementos(odt.getPiezas());
-					odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
-				}
-		    }
-			
-			private int getUltimoOrdenUsado() {
-				List<Integer> ordenes = Lists.newArrayList();
-				for (int i = 0; i < getTabla().getRowCount(); i++) {
-					PiezaODT piezaODT = getElemento(i);
-					if (piezaODT.getOrden() != null) {
-						ordenes.add(piezaODT.getOrden());
-					}
-				}
-				if (ordenes.isEmpty()) {
-					return 0;
-				}
-				Collections.sort(ordenes);
-				for (int i = 0; i<ordenes.size() -1;i++) {
-					int ordenActual = ordenes.get(i);
-					int ordenSig = ordenes.get(i + 1);
-					if (ordenActual + 1 != ordenSig) { // hay un gap
-						return ordenActual;
-					}
-				}
-				return ordenes.get(ordenes.size() - 1);
-			}
-			
-			private void blanquearCelda(int cell, int row) {
-				try {
-					getTabla().setValueAt(null, row, cell);
-				} catch (Exception e) {
-					// ESTO TIRA EXCEPTION, PERO NO PASA NADA.
-					// HAGO ESTO PARA OCULTAR EL STACKTRACE
-				}
-				PiezaODT pieza = getElemento(row);
-				pieza.setOrden(null);
-			}
-		};
-
-		@Override
-		protected FWJTable construirTabla() {
-			final FWJTable tablaPiezaEntrada = new FWJTable(0, CANT_COLS);
-			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 150, 150, true);
-			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 150, true);
-			tablaPiezaEntrada.setIntColumn(COL_ORDEN, "ORDEN", 90, false);
-			tablaPiezaEntrada.setAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setAlignment(COL_ORDEN, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setHeaderAlignment(COL_NRO_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setHeaderAlignment(COL_METROS_PIEZA_ENT, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setHeaderAlignment(COL_ORDEN, FWJTable.CENTER_ALIGN);
-			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
-			tablaPiezaEntrada.setReorderingAllowed(false);
-			tablaPiezaEntrada.setAllowSorting(true);
-			tablaPiezaEntrada.setCellSelectionEnabled(true);
-			return tablaPiezaEntrada;
-		}
-
 		@Override
 		protected PiezaODT getElemento(int fila) {
 			return (PiezaODT) getTabla().getValueAt(fila, COL_OBJ);
@@ -570,27 +580,27 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
             @Override
             public Component getLastComponent(final Container aContainer) {
-                return getPanTablaPieza().getTabla();
+                return getTxtMetrosABuscar();
             }
 
             @Override
             public Component getFirstComponent(final Container aContainer) {
-                return getPanTablaPieza().getTabla();
+                return getTxtMetrosABuscar();
             }
 
             @Override
             public Component getDefaultComponent(final Container aContainer) {
-                return getPanTablaPieza().getTabla();
+                return getTxtMetrosABuscar();
             }
 
             @Override
             public Component getComponentBefore(final Container aContainer, final Component aComponent) {
-                return getPanTablaPieza().getTabla();
+                return getTxtMetrosABuscar();
             }
 
             @Override
             public Component getComponentAfter(final Container aContainer, final Component aComponent) {
-                return getPanTablaPieza().getTabla();
+                return getTxtMetrosABuscar();
             }
         };
     }
