@@ -25,6 +25,7 @@ import javax.swing.border.EtchedBorder;
 
 import org.apache.taglibs.string.util.StringW;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -502,7 +503,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private PiezaODT findObj(PiezaODT elemento, List<PiezaODT> piezas) {
 			for(PiezaODT pieza : piezas) {
-				if(pieza.getId().equals(elemento.getId())) {
+				if(Objects.equal(pieza.getOrden(), elemento.getOrden()) && Objects.equal(pieza.getOrdenSubpieza(), elemento.getOrdenSubpieza())) {
 					return pieza;
 				}
 			}

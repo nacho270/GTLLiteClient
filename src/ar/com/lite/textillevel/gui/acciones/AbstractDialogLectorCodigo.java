@@ -100,7 +100,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	private void salir() {
 		int ret = FWJOptionPane.showQuestionMessage(this, "¿Está seguro que desea salir?", "Lector de " + titulo);
 		if (ret == FWJOptionPane.YES_OPTION) {
-			dispose();
+			System.exit(1);
 		}
 	}
 
@@ -118,7 +118,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 
 	private Component getTxtCodigo() {
 		if(txtCod == null) {
-			txtCod = new FWJNumericTextField(0l, 99999999l);
+			txtCod = new FWJNumericTextField(0l, 999999999l);
 			Font font1 = new Font("SansSerif", Font.BOLD, 50);
 			txtCod.setFont(font1);
 			txtCod.setPreferredSize(new Dimension(400, 50));
@@ -148,11 +148,11 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
                     	reset();
                         return;
 	            	}
-					if (texto.length() != 8) {
-						FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código de ODT debe contener 8 caracteres.", "Error");
-						requestFocus();
-						return;
-	            	}
+//					if (texto.length() != 8) {
+//						FWJOptionPane.showErrorMessage(AbstractDialogLectorCodigo.this, "El código de ODT debe contener 8 caracteres.", "Error");
+//						requestFocus();
+//						return;
+//	            	}
 	            	try {
 	            		T obj = callback.buscar(texto.trim());
 	            		if(obj == null) {
