@@ -78,10 +78,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private JPanel panelDatosCliente;
 	private JPanel panelDatosFactura;
 	
-	private FWJNumericTextField txtMetrosABuscar;
+	private JTextField txtMetrosABuscar;
 	private JButton btnBuscarPorMetros;
 	
-	private boolean estadoModificado = false;
 	private int ultimoOrdenIngresado = 0;
 	
 	private static final Comparator<PiezaODT> piezasComparator = new Comparator<PiezaODT>() {
@@ -100,7 +99,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		super(owner);
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
-//		setSize(new Dimension(590, 600)); //para rasperry
+//		setSize(new Dimension(590, 600)); //para raspberry
 		setSize(new Dimension(630, 750));
 		setTitle("Cosido");
 		construct();
@@ -169,9 +168,9 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		return txtMetros;
 	}
 
-	private FWJNumericTextField getTxtMetrosABuscar() {
+	private JTextField getTxtMetrosABuscar() {
 		if (txtMetrosABuscar == null) {
-			txtMetrosABuscar = new FWJNumericTextField(0l, 99999l);
+			txtMetrosABuscar = new JTextField();
 			txtMetrosABuscar.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
@@ -195,7 +194,12 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Debe ingresar los metros a buscar", "Error");
 						return;
 					}
-					BigDecimal metrosABuscar = new BigDecimal(getTxtMetrosABuscar().getText());
+					if(!GenericUtils.esNumerico(getTxtMetrosABuscar().getText())) {
+						FWJOptionPane.showErrorMessage(JDialogOrdenarPiezasODT.this, "Solo puede ingresar números", "Error");
+						return;
+					}
+					String txtABuscar = getTxtMetrosABuscar().getText().replace(",",".");
+					BigDecimal metrosABuscar = new BigDecimal(txtABuscar);
 					boolean piezaEncontrada = false;
 					for(PiezaODT podt : odt.getPiezas()) {
 						if (podt.getOrden() != null) {
@@ -383,13 +387,8 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	}
 
 	private void grabarEImprimir() {
-		if (estadoModificado) {
-			if (validar()) {
-				odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
-				estadoModificado = false;
-				new ImpresionODTHandler(odt, this).imprimir();
-			}
-		} else if (validar()) {
+		if (validar()) {
+			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 			new ImpresionODTHandler(odt, this).imprimir();
 		}
 	}
@@ -400,12 +399,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			btnImprimir.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (estadoModificado) {
-						int resp = FWJOptionPane.showQuestionMessage(JDialogOrdenarPiezasODT.this, StringW.wordWrap("Ha modificado el orden de las piezas. El mismo sera grabado antes de imprimir. Desea continuar?"), "Pregunta");
-						if (resp == FWJOptionPane.NO_OPTION) {
-							return;
-						}
-					}
 					grabarEImprimir();
 				}
 			});
