@@ -9,6 +9,11 @@ public class LectorODT extends AbstractDialogLectorCodigo<OrdenDeTrabajo> {
 	private static final long serialVersionUID = 244330423364916129L;
 
 	public LectorODT(Frame owner, DialogLectorCodigoCallback<OrdenDeTrabajo> callback) {
-		super(owner, "ODT", callback);
+		this(owner, "Lector de ODT", callback);
 	}
+	
+	public LectorODT(Frame owner, String titulo, DialogLectorCodigoCallback<OrdenDeTrabajo> callback) {
+		super(owner, titulo, "ODT", callback);
+	}
+
 }

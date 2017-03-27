@@ -12,6 +12,7 @@ import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.templates.main.FWMainTemplate;
 import ar.com.fwcommon.templates.main.config.IConfigClienteManager;
 import ar.com.fwcommon.templates.main.menu.MenuAyuda;
+import ar.com.fwcommon.util.GuiUtil;
 import ar.com.fwcommon.util.MiscUtil;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
@@ -20,6 +21,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientLogin
 
 	private static final long serialVersionUID = -7589061723941536496L;
 	protected MenuAyuda menuAyuda;
+	private Action newInstance;
 
 	static {
 		try {
@@ -87,8 +89,14 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientLogin
 
 	@Override
 	protected final void postLogin() throws FWException {
+		newInstance.actionPerformed(new ActionEvent(new Object(), 0, ""));
+	}
+
+	public void iniciarAplicacion() {
+		Terminal terminalData = null;
 		try {
-			Terminal terminalData = GTLLiteRemoteService.getTerminalData();
+			terminalData = GTLLiteRemoteService.getTerminalData();
+			
 			if (terminalData == null) {
 				FWJOptionPane.showErrorMessage(this, "No se ha configurado el módulo para esta terminal", "Error");
 				return;
@@ -99,14 +107,22 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientLogin
 			}
 			crearTitulo(terminalData.getNombre());
 			GTLLiteGlobalCache.getInstance().setTerminalData(terminalData);
-			Action newInstance = (Action)Class.forName(terminalData.getModuloPorDefecto().getClase()).getConstructor(new Class[] { Frame.class }).newInstance(new Object[] { FWMainTemplate.getFrameInstance() });
-			newInstance.actionPerformed(new ActionEvent(new Object(), 0, ""));
+			this.newInstance = (Action)Class.forName(terminalData.getModuloPorDefecto().getClase()).getConstructor(new Class[] { Frame.class }).newInstance(new Object[] { FWMainTemplate.getFrameInstance() });
 		} catch(Exception e) {
 			e.printStackTrace();
 			FWJOptionPane.showErrorMessage(this, "Ha ocurrido un error al querer iniciar el modulo", "Error");
 		}
+
+		setVisible(true);
+		GuiUtil.centrar(this);
+		if(terminalData.getModuloPorDefecto().getRequiereLogin()) {
+			verDialogoLogin();
+		} else {
+			newInstance.actionPerformed(new ActionEvent(new Object(), 0, ""));			
+		}
 	}
 
+	
 	private void crearTitulo(final String nombre) throws FWException {
 		StringBuffer sb = new StringBuffer("Textil Level - Terminal [");
 		sb.append(nombre);

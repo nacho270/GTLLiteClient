@@ -8,7 +8,6 @@ import java.rmi.RemoteException;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
-
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
@@ -21,6 +20,7 @@ import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
+import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 import ar.com.textillevel.modulos.odt.facade.api.remote.OrdenDeTrabajoFacadeRemote;
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
 import ar.com.textillevel.modulos.terminal.facade.api.remote.TerminalFacadeRemote;
@@ -51,6 +51,22 @@ public class GTLLiteRemoteService {
 		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
 		if (odtCheck != null) {// estaba en el segundo => grabo ahí
 			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarCambioEstadoAndAvance(odt, estado, avance, usuarioSistema);
+		}
+		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
+	}
+
+	public static void grabarAndRegistrarAvanceEnEstadoEnProceso(OrdenDeTrabajo odt, ESectorMaquina sectorAnterior, ESectorMaquina sectorHacia) {
+		// consulto en el primero
+		OrdenDeTrabajo odtCheck = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
+		if (odtCheck != null) {// estaba en el primero => grabo ahí
+			gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarAvanceEnEstadoEnProceso(odtCheck.getId(), sectorAnterior, sectorHacia, getTerminalData());
+			return;
+		}
+		// consulto en el segundo
+		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
+		if (odtCheck != null) {// estaba en el segundo => grabo ahí
+			gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarAvanceEnEstadoEnProceso(odtCheck.getId(), sectorAnterior, sectorHacia, getTerminalData());
+			return;
 		}
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
 	}

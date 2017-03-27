@@ -34,6 +34,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 	private static final long serialVersionUID = -6496099755778688024L;
 
 	private String titulo;
+	private String labelInput;
 	
 	private JPanel panelBotones;
 	private JPanel panelGeneral;
@@ -43,18 +44,20 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 
 	private DialogLectorCodigoCallback<T> callback;
 	private boolean alertMostrandose=false;
+
 	
-	public AbstractDialogLectorCodigo(Frame owner, String titulo, final DialogLectorCodigoCallback<T> callback) {
+	public AbstractDialogLectorCodigo(Frame owner, String titulo, String labelInput, final DialogLectorCodigoCallback<T> callback) {
 		super(owner);
 		this.titulo = titulo;
 		this.callback = callback;
+		this.labelInput = labelInput;
 		setUpComponentes();
 		setUpScreen();
 	}
 
 	private void setUpScreen() {
 		setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-		setTitle("Lector de " + titulo);
+		setTitle(titulo);
 		GuiUtil.centrar(this);
 		setResizable(true);
 		setModal(true);
@@ -108,7 +111,7 @@ public abstract class AbstractDialogLectorCodigo<T> extends JDialog {
 		if(panelGeneral == null) {
 			panelGeneral = new JPanel();
 			panelGeneral.setLayout(new GridBagLayout());
-			JLabel lblODT = new JLabel(titulo + ": ");
+			JLabel lblODT = new JLabel(labelInput + ": ");
 			lblODT.setFont(new Font("SansSerif", Font.BOLD, 50));
 			panelGeneral.add(lblODT, GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 1, 1, 0, 0));
 			panelGeneral.add(getTxtCodigo(),  GenericUtils.createGridBagConstraints(1, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 5), 1, 1, 1, 0));
