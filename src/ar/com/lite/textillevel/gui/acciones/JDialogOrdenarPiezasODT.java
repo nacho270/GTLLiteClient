@@ -26,6 +26,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 
 import main.GTLLiteGlobalCache;
@@ -151,7 +152,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			txtPiezas = new JTextField();
 			txtPiezas.setEditable(false);
 			if (remitoEntrada.getId() != null) {
-				getTxtPiezas().setText(String.valueOf(remitoEntrada.getPiezas().size()));
+				getTxtPiezas().setText(String.valueOf(odt.getPiezas().size()));
 			}
 		}
 		return txtPiezas;
@@ -162,7 +163,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			txtMetros = new JTextField();
 			txtMetros.setEditable(false);
 			if (remitoEntrada.getId() != null) {
-				txtMetros.setText(remitoEntrada.getTotalMetros().toString());
+				txtMetros.setText(odt.getTotalMetrosEntrada().toString());
 			}
 		}
 		return txtMetros;
@@ -457,6 +458,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			tablaPiezaEntrada.setStringColumn(COL_OBJ, "", 0, 0, true);
 			tablaPiezaEntrada.setReorderingAllowed(false);
 			tablaPiezaEntrada.setAllowSorting(true);
+			tablaPiezaEntrada.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 //			tablaPiezaEntrada.setCellSelectionEnabled(true);
 			return tablaPiezaEntrada;
 		}
@@ -492,8 +494,10 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		}
 		
 		private void habilitarBotones(int rowSelected) {
-			getBotonSubir().setEnabled(rowSelected>0);
-			getBotonBajar().setEnabled(rowSelected<getTabla().getRowCount()-1 && 
+			getBotonSubir().setEnabled(rowSelected>0 && getElemento(rowSelected) != null && 
+					getElemento(rowSelected).getOrden() != null && getElemento(rowSelected-1) != null && 
+					getElemento(rowSelected-1).getOrden() != null);
+			getBotonBajar().setEnabled(rowSelected>0 && rowSelected<getTabla().getRowCount()-1 && 
 					getElemento(rowSelected + 1) != null && 
 					getElemento(rowSelected + 1).getOrden() != null);
 		}
