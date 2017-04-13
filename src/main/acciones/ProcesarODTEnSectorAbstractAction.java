@@ -13,12 +13,10 @@ import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 public abstract class ProcesarODTEnSectorAbstractAction implements Action {
 
 	private Frame frame;
-	private ESectorMaquina sectorAnterior;
 	private ESectorMaquina sector;
 	
-	public ProcesarODTEnSectorAbstractAction(Frame frame, ESectorMaquina sectorAnterior, ESectorMaquina sector){
+	public ProcesarODTEnSectorAbstractAction(Frame frame, ESectorMaquina sector){
 		this.frame = frame;
-		this.sectorAnterior = sectorAnterior;
 		this.sector = sector;
 	}
 	
@@ -47,7 +45,7 @@ public abstract class ProcesarODTEnSectorAbstractAction implements Action {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		new LectorODT(frame, sector.toString(), new ProcesarODTEnSectorCallback(sectorAnterior, sector, frame));
+		new LectorODT(frame, sector.toString(), new ProcesarODTEnSectorCallback(sector, frame));
 	}
 
 	protected ESectorMaquina getSector() {

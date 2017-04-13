@@ -6,7 +6,7 @@ import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 public class ProcesarODTEnSectorSecoAction extends ProcesarODTEnSectorAbstractAction {
 
 	public ProcesarODTEnSectorSecoAction(Frame frame) {
-		super(frame, ESectorMaquina.SECTOR_HUMEDO, ESectorMaquina.SECTOR_SECO);
+		super(frame, ESectorMaquina.SECTOR_SECO);	
 	}
 
 }
