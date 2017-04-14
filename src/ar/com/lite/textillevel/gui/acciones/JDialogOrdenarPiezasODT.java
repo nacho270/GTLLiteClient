@@ -27,6 +27,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
 import main.GTLLiteGlobalCache;
@@ -65,7 +66,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	private JPanel pnlBotones;
 	private JButton btnAceptar;
 	private JButton btnCancelar;
-	private JButton btnImprimir;
 	private FWJNumericTextField txtNroRemito;
 	private FWDateField txtFechaEmision;
 	private FWJTextField txtProducto;
@@ -174,7 +174,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			txtMetrosABuscar = new JTextField();
 			txtMetrosABuscar.addKeyListener(new KeyAdapter() {
 				@Override
-				public void keyPressed(KeyEvent e) {
+				public void keyReleased(KeyEvent e) {
 					if(e.getKeyCode() == KeyEvent.VK_ENTER) {
 						getBtnBuscarPorMetros().doClick();
 					}
@@ -219,6 +219,17 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					getTxtMetrosABuscar().setText("");
 					odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 					refreshTable();
+					getBtnAceptar().setEnabled(todasLasPiezasTienenOrden());
+					SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+							FWJTable tabla = getPanTablaPieza().getTabla();
+							tabla.setRowSelectionInterval(ultimoOrdenIngresado - 1, ultimoOrdenIngresado - 1);
+							tabla.scrollRectToVisible(tabla.getCellRect(ultimoOrdenIngresado, tabla.getColumnCount(), true));
+							getPanTablaPieza().getScrollPane().scrollRectToVisible(tabla.getCellRect(ultimoOrdenIngresado, tabla.getColumnCount(), true));
+							getPanTablaPieza().getScrollPane().invalidate();
+							getPanTablaPieza().getScrollPane().repaint();
+						}
+					});
 				}
 			});
 		}
@@ -346,12 +357,21 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			pnlBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
 			pnlBotones.add(getBtnAceptar());
 			pnlBotones.add(getBtnCancelar());
-			pnlBotones.add(getBtnImprimir());
 			getBtnCancelar().setEnabled(true);
-			getBtnImprimir().setVisible(this.odt.getPiezas().get(0).getOrden() != null);
-			getBtnAceptar().setVisible(this.odt.getPiezas().get(0).getOrden() == null);
+			getBtnAceptar().setEnabled(todasLasPiezasTienenOrden());
 		}
 		return pnlBotones;
+	}
+
+	private boolean todasLasPiezasTienenOrden() {
+		boolean todasTienenOrden = true;
+		for(PiezaODT podt : odt.getPiezas()) {
+			if (podt.getOrden() == null) {
+				todasTienenOrden = false;
+				break;
+			}
+		}
+		return todasTienenOrden;
 	}
 
 	private JButton getBtnCancelar() {
@@ -371,7 +391,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 	private JButton getBtnAceptar() {
 		if (btnAceptar == null) {
-			btnAceptar = new JButton("Aceptar");
+			btnAceptar = new JButton("Imprimir");
 			btnAceptar.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
@@ -394,19 +414,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		}
 	}
 
-	private JButton getBtnImprimir() {
-		if (btnImprimir == null) {
-			btnImprimir = new JButton("Imprimir");
-			btnImprimir.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					grabarEImprimir();
-				}
-			});
-		}
-		return btnImprimir;
-	}
-	
 	private boolean validar() {
 		String msgValidacionPiezas = getPanTablaPieza().validar();
 		if (msgValidacionPiezas != null) {
@@ -446,6 +453,14 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 					habilitarBotones(getTabla().getSelectedRow());
 				}
 			});
+			tablaPiezaEntrada.addKeyListener(new KeyAdapter() {
+				@Override
+				public void keyReleased(KeyEvent e) {
+					System.out.println(e.getKeyCode());
+					System.out.println(getTabla().getSelectedRow());
+					habilitarBotones(getTabla().getSelectedRow());
+				}
+			});
 			tablaPiezaEntrada.setStringColumn(COL_NRO_PIEZA_ENT, "PIEZA(S) ENT.", 150, 150, true);
 			tablaPiezaEntrada.setFloatColumn(COL_METROS_PIEZA_ENT, "METROS ENT.", 150, true);
 			tablaPiezaEntrada.setIntColumn(COL_ORDEN, "ORDEN", 90, true);
@@ -461,6 +476,15 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			tablaPiezaEntrada.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 //			tablaPiezaEntrada.setCellSelectionEnabled(true);
 			return tablaPiezaEntrada;
+		}
+
+		private void habilitarBotones(int rowSelected) {
+			getBotonSubir().setEnabled(rowSelected>0 && getElemento(rowSelected) != null && 
+					getElemento(rowSelected).getOrden() != null && getElemento(rowSelected-1) != null && 
+					getElemento(rowSelected-1).getOrden() != null);
+			getBotonBajar().setEnabled(rowSelected>=0 && rowSelected<getTabla().getRowCount()-1 && 
+					getElemento(rowSelected + 1) != null && 
+					getElemento(rowSelected + 1).getOrden() != null);
 		}
 
 		@Override
@@ -493,14 +517,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			habilitarBotones(selectedRow - 1);
 		}
 		
-		private void habilitarBotones(int rowSelected) {
-			getBotonSubir().setEnabled(rowSelected>0 && getElemento(rowSelected) != null && 
-					getElemento(rowSelected).getOrden() != null && getElemento(rowSelected-1) != null && 
-					getElemento(rowSelected-1).getOrden() != null);
-			getBotonBajar().setEnabled(rowSelected>0 && rowSelected<getTabla().getRowCount()-1 && 
-					getElemento(rowSelected + 1) != null && 
-					getElemento(rowSelected + 1).getOrden() != null);
-		}
 		
 		public String validar() {
 			String ret = null;
