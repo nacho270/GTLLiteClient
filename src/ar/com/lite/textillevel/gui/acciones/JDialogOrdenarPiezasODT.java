@@ -456,8 +456,6 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			tablaPiezaEntrada.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyReleased(KeyEvent e) {
-					System.out.println(e.getKeyCode());
-					System.out.println(getTabla().getSelectedRow());
 					habilitarBotones(getTabla().getSelectedRow());
 				}
 			});
