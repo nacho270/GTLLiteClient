@@ -1,7 +1,8 @@
 package ar.com.lite.textillevel.gui.acciones;
 
 import java.awt.Frame;
-import ar.com.fwcommon.componentes.FWJOptionPane;
+import javax.swing.JOptionPane;
+import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
@@ -9,6 +10,7 @@ import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 public class ProcesarODTEnSectorCallback implements DialogLectorCodigoCallback<OrdenDeTrabajo> {
 
 	private ESectorMaquina sector;
+	@SuppressWarnings("unused")
 	private Frame owner;
 
 	public ProcesarODTEnSectorCallback(ESectorMaquina sector, Frame owner) {
@@ -24,14 +26,11 @@ public class ProcesarODTEnSectorCallback implements DialogLectorCodigoCallback<O
 	@Override
 	public void encontrado(OrdenDeTrabajo odt) {
 		GTLLiteRemoteService.grabarAndRegistrarAvanceEnEstadoEnProceso(odt, sector);
-		FWJOptionPane.showInformationMessage(owner, "LA ODT " + odt.getCodigo() + " pasó al " + sector, "Información");
+		GenericUtils.showTemporaryDialog(3000, "Información", new JOptionPane("LA ODT " + odt.getCodigo() + " pasó al " + sector, JOptionPane.INFORMATION_MESSAGE));
 	}
 
 	@Override
 	public String validar(OrdenDeTrabajo odt) {
-		if(odt.getMaquinaActual() == null) {
-			return "La ODT no tiene asignada una máquina";
-		}
 		return null;
 	}
 
