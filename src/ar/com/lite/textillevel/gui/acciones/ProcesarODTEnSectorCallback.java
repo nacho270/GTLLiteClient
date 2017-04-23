@@ -25,6 +25,11 @@ public class ProcesarODTEnSectorCallback implements DialogLectorCodigoCallback<O
 
 	@Override
 	public void encontrado(OrdenDeTrabajo odt) {
+		if(odt.getMaquinaActual() != null && odt.getMaquinaActual().getTipoMaquina().getSectorMaquina() == sector) {
+			GenericUtils.showTemporaryDialog(3000, "Información", new JOptionPane("LA ODT ya se encuentra en " + sector, JOptionPane.WARNING_MESSAGE));
+			return;
+		}
+		
 		GTLLiteRemoteService.grabarAndRegistrarAvanceEnEstadoEnProceso(odt, sector);
 		GenericUtils.showTemporaryDialog(3000, "Información", new JOptionPane("LA ODT " + odt.getCodigo() + " pasó al " + sector, JOptionPane.INFORMATION_MESSAGE));
 	}

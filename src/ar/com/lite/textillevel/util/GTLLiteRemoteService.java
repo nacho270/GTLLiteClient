@@ -5,11 +5,14 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
+
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
+import ar.com.fwcommon.util.StringUtil;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
 import ar.com.textillevel.entidades.portal.UsuarioSistema;
 import ar.com.textillevel.entidades.to.TerminalServiceResponse;
@@ -72,14 +75,23 @@ public class GTLLiteRemoteService {
 	}
 
 	public static Terminal getTerminalData() {
+		String hostAddress = null;
+		Terminal terminal = null;
 		try {
-			String hostAddress = getFirstNonLoopbackAddress().getHostAddress();
-			System.out.println("IP: " + hostAddress);
-			return gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(hostAddress);
+			hostAddress = getFirstNonLoopbackAddress().getHostAddress();
+			terminal = gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(hostAddress);
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new IllegalArgumentException("Hubo un problema al calcular la IP del dispositivo " + hostAddress + " msg: " + e.getMessage());
 		}
-		return null;
+		if(terminal == null) {
+			List<Terminal> all = gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getAll();
+			List<String> terminalDATA = new ArrayList<String>(all.size());
+			for(Terminal t : all) {
+				terminalDATA.add(t.getNombre() + " - " + t.getIp());
+			}
+			throw new IllegalArgumentException("No existe en la DB una Terminal con IP " + hostAddress + ".\nLas terminales habilitadas son: \n" + StringUtil.getCadena(terminalDATA, "\n"));
+		}
+		return terminal;
 	}
 
 	@SuppressWarnings("rawtypes")
