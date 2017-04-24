@@ -30,9 +30,9 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EtchedBorder;
 
-import main.GTLLiteGlobalCache;
-
 import org.apache.taglibs.string.util.StringW;
+
+import com.google.common.collect.Lists;
 
 import ar.com.fwcommon.componentes.FWDateField;
 import ar.com.fwcommon.componentes.FWJNumericTextField;
@@ -50,8 +50,9 @@ import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
-
-import com.google.common.collect.Lists;
+import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
+import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
+import main.GTLLiteGlobalCache;
 
 public class JDialogOrdenarPiezasODT extends JDialog {
 
@@ -100,8 +101,8 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		super(owner);
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
-//		setSize(new Dimension(590, 600)); //para raspberry
-		setSize(new Dimension(630, 750));
+		setSize(new Dimension(590, 600)); //para raspberry
+//		setSize(new Dimension(630, 750));
 		setTitle("Cosido");
 		construct();
 		setDatos();
@@ -217,7 +218,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 						return;
 					}
 					getTxtMetrosABuscar().setText("");
-					odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+					odt = persist(EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR);
 					refreshTable();
 					getBtnAceptar().setEnabled(todasLasPiezasTienenOrden());
 					SwingUtilities.invokeLater(new Runnable() {
@@ -234,6 +235,15 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			});
 		}
 		return btnBuscarPorMetros;
+	}
+
+	private OrdenDeTrabajo persist(EEstadoODT estadoODT, EAvanceODT avance) {
+		if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getTipoMaquina().getSectorMaquina() != ESectorMaquina.SECTOR_COSIDO) {
+			InfoAsignacionMaquinaTO info = GTLLiteRemoteService.getMaquinaAndProximoOrdenBySector(ESectorMaquina.SECTOR_COSIDO);
+			odt.setMaquinaActual(info.getMaquina());
+			odt.setOrdenEnMaquina(info.getOrdenEnMaquina());
+		}
+		return GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, estadoODT, avance, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 	}
 
 	private JPanel getPanDetalle() {
@@ -409,7 +419,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 
 	private void grabarEImprimir() {
 		if (validar()) {
-			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			odt = persist(EEstadoODT.EN_PROCESO, EAvanceODT.FINALIZADO);
 			new ImpresionODTHandler(odt, this).imprimir();
 		}
 	}
@@ -494,7 +504,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			piezaASubir.setOrden(piezaASubir.getOrden() - 1);
 			odt.getPiezas().set(selectedRow, piezaASubir);
 			odt.getPiezas().set(selectedRow + 1, piezaABajar);
-			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			odt = persist(EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR);
 			refreshTable();
 			getTabla().setRowSelectionInterval(selectedRow + 1, selectedRow + 1);
 			habilitarBotones(selectedRow + 1);
@@ -509,7 +519,7 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			piezaABajar.setOrden(piezaABajar.getOrden() + 1);
 			odt.getPiezas().set(selectedRow, piezaASubir);
 			odt.getPiezas().set(selectedRow - 1, piezaABajar);
-			odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			odt = persist(EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR);
 			refreshTable();
 			getTabla().setRowSelectionInterval(selectedRow - 1, selectedRow - 1);
 			habilitarBotones(selectedRow - 1);

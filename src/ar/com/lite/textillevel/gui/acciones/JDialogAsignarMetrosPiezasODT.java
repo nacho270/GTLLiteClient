@@ -45,6 +45,8 @@ import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.entidades.PiezaODT;
 import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
+import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
+import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
 import main.GTLLiteGlobalCache;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
@@ -494,6 +496,11 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private void persistParcial() {
+			if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getTipoMaquina().getSectorMaquina() != ESectorMaquina.SECTOR_TERMINADO) {
+				InfoAsignacionMaquinaTO info = GTLLiteRemoteService.getMaquinaAndProximoOrdenBySector(ESectorMaquina.SECTOR_TERMINADO);
+				odt.setMaquinaActual(info.getMaquina());
+				odt.setOrdenEnMaquina(info.getOrdenEnMaquina());
+			}
 			JDialogAsignarMetrosPiezasODT.this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				PiezaODT elemento = getElemento(i);

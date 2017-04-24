@@ -6,6 +6,7 @@ import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.GTLLiteRemoteService;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
+import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
 
 public class ProcesarODTEnSectorCallback implements DialogLectorCodigoCallback<OrdenDeTrabajo> {
 
@@ -29,7 +30,10 @@ public class ProcesarODTEnSectorCallback implements DialogLectorCodigoCallback<O
 			GenericUtils.showTemporaryDialog(3000, "Información", new JOptionPane("LA ODT ya se encuentra en " + sector, JOptionPane.WARNING_MESSAGE));
 			return;
 		}
-		
+
+		InfoAsignacionMaquinaTO infoAsignacionMaq = GTLLiteRemoteService.getMaquinaAndProximoOrdenBySector(sector);
+		odt.setMaquinaActual(infoAsignacionMaq.getMaquina());
+
 		GTLLiteRemoteService.grabarAndRegistrarAvanceEnEstadoEnProceso(odt, sector);
 		GenericUtils.showTemporaryDialog(3000, "Información", new JOptionPane("LA ODT " + odt.getCodigo() + " pasó al " + sector, JOptionPane.INFORMATION_MESSAGE));
 	}

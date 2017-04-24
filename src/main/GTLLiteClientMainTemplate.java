@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.UIManager;
 
+import org.apache.taglibs.string.util.StringW;
+
 import ar.com.fwcommon.boss.BossEstilos;
 import ar.com.fwcommon.componentes.FWJOptionPane;
 import ar.com.fwcommon.componentes.error.FWException;
@@ -110,7 +112,7 @@ public class GTLLiteClientMainTemplate extends FWMainTemplate<GTLLiteClientLogin
 			this.newInstance = (Action)Class.forName(terminalData.getModuloPorDefecto().getClase()).getConstructor(new Class[] { Frame.class }).newInstance(new Object[] { FWMainTemplate.getFrameInstance() });
 		} catch(Exception e) {
 			e.printStackTrace();
-			FWJOptionPane.showErrorMessage(this, "Ha ocurrido un error al querer iniciar el modulo", "Error");
+			FWJOptionPane.showErrorMessage(this, StringW.wordWrap("Ha ocurrido un error al querer iniciar el modulo: " + e.getMessage()), "Error");
 		}
 
 		setVisible(true);
