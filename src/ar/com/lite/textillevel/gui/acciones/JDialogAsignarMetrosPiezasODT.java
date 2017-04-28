@@ -47,7 +47,6 @@ import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
-import main.GTLLiteGlobalCache;
 
 public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
@@ -79,6 +78,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	
 	private static final String TEXTO_DIVIDIR="Dividir";
 	private static final String TEXTO_AGREGAR_SUBPIEZA="Agregar";
+	
 
 	public JDialogAsignarMetrosPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
@@ -288,7 +288,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				public void actionPerformed(ActionEvent e) {
 					if(validar()) {
 						acepto = true;
-						GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.FINALIZADO, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+						GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.FINALIZADO);
 						dispose();
 					}
 					return;
@@ -496,12 +496,12 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		}
 
 		private void persistParcial() {
-			if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getTipoMaquina().getSectorMaquina() != ESectorMaquina.SECTOR_TERMINADO) {
+			if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getSector() != ESectorMaquina.SECTOR_TERMINADO) {
 				InfoAsignacionMaquinaTO info = GTLLiteRemoteService.getMaquinaAndProximoOrdenBySector(ESectorMaquina.SECTOR_TERMINADO);
 				odt.setMaquinaActual(info.getMaquina());
 				odt.setOrdenEnMaquina(info.getOrdenEnMaquina());
 			}
-			JDialogAsignarMetrosPiezasODT.this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+			JDialogAsignarMetrosPiezasODT.this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR);
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				PiezaODT elemento = getElemento(i);
 				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents

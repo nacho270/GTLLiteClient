@@ -52,7 +52,6 @@ import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
-import main.GTLLiteGlobalCache;
 
 public class JDialogOrdenarPiezasODT extends JDialog {
 
@@ -238,12 +237,12 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 	}
 
 	private OrdenDeTrabajo persist(EEstadoODT estadoODT, EAvanceODT avance) {
-		if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getTipoMaquina().getSectorMaquina() != ESectorMaquina.SECTOR_COSIDO) {
+		if(odt.getMaquinaActual() == null || odt.getMaquinaActual().getSector() != ESectorMaquina.SECTOR_COSIDO) {
 			InfoAsignacionMaquinaTO info = GTLLiteRemoteService.getMaquinaAndProximoOrdenBySector(ESectorMaquina.SECTOR_COSIDO);
 			odt.setMaquinaActual(info.getMaquina());
 			odt.setOrdenEnMaquina(info.getOrdenEnMaquina());
 		}
-		return GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, estadoODT, avance, GTLLiteGlobalCache.getInstance().getUsuarioSistema());
+		return GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, estadoODT, avance);
 	}
 
 	private JPanel getPanDetalle() {

@@ -45,16 +45,17 @@ public class GTLLiteRemoteService {
 		}
 	}
 
-	public static OrdenDeTrabajo grabarAndRegistrarCambioEstadoAndAvance(OrdenDeTrabajo odt, EEstadoODT estado, EAvanceODT avance, UsuarioSistema usuarioSistema) {
+	public static OrdenDeTrabajo grabarAndRegistrarCambioEstadoAndAvance(OrdenDeTrabajo odt, EEstadoODT estado, EAvanceODT avance) {
 		// consulto en el primero
+		UsuarioSistema usuarioSistema = GTLLiteGlobalCache.getInstance().getUsuarioSistema();
 		OrdenDeTrabajo odtCheck = gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
 		if (odtCheck != null) {// estaba en el primero => grabo ahí
-			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarCambioEstadoAndAvance(odt, estado, avance, usuarioSistema);
+			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarCambioEstadoAndAvance(odt, estado, avance, usuarioSistema == null ? getTerminalData() : null, usuarioSistema);
 		}
 		// consulto en el segundo
 		odtCheck = gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getODTEagerByCodigo(odt.getCodigo());
 		if (odtCheck != null) {// estaba en el segundo => grabo ahí
-			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarCambioEstadoAndAvance(odt, estado, avance, usuarioSistema);
+			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).grabarAndRegistrarCambioEstadoAndAvance(odt, estado, avance, usuarioSistema == null ? getTerminalData() : null, usuarioSistema);
 		}
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
 	}
@@ -77,6 +78,10 @@ public class GTLLiteRemoteService {
 			return;
 		}
 		throw new IllegalArgumentException("La ODT " + odt + " no está en ningún sistema...");
+	}
+
+	public static List<OrdenDeTrabajo> getAllNoFinalizadasBySector(ESectorMaquina sector) {
+		return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getAllNoFinalizadasBySector(sector);
 	}
 
 	public static Terminal getTerminalData() {

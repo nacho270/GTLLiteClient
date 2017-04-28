@@ -10,12 +10,15 @@ import ar.com.lite.textillevel.gui.acciones.LectorODT;
 import ar.com.lite.textillevel.gui.acciones.ProcesarODTEnSectorCallback;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 
-public abstract class ProcesarODTEnSectorAbstractAction implements Action {
+public abstract class ProcesarConSoloLeerODTEnSectorAbstractAction implements Action {
 
 	private Frame frame;
 	private ESectorMaquina sector;
 	
-	public ProcesarODTEnSectorAbstractAction(Frame frame, ESectorMaquina sector){
+	public ProcesarConSoloLeerODTEnSectorAbstractAction(Frame frame, ESectorMaquina sector) {
+		if(sector.isAdmiteInterProcesamiento()) {
+			throw new IllegalArgumentException("No se puede implementar este módulo con el sector " + sector  + "(ver atributo " + sector + ".admiteInterProcesamiento)");
+		}
 		this.frame = frame;
 		this.sector = sector;
 	}
