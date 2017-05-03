@@ -3,6 +3,7 @@ package main;
 import java.awt.Color;
 
 import ar.com.fwcommon.componentes.error.FWException;
+import ar.com.lite.textillevel.gui.util.GenericUtils;
 
 public class GuiBackGTLLite extends GTLLiteClientMainTemplate {
 
@@ -41,14 +42,11 @@ public class GuiBackGTLLite extends GTLLiteClientMainTemplate {
 			System.getProperties().setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
 			System.getProperties().setProperty("cltimezone", "GMT-3");
 			if (System.getProperty("java.naming.provider.url_otro_sistema") == null) {
-				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", "192.168.1.13:1099"); //para raspberry
-//				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", "localhost:1099");
+				System.getProperties().setProperty("java.naming.provider.url_otro_sistema", GenericUtils.isWindows() ? "localhost:1099" : "192.168.1.13:1099" /*para raspberry*/);
 			}
 			if (System.getProperty("java.naming.provider.url") == null) {
-				System.getProperties().setProperty("java.naming.provider.url", "192.168.1.250:1099"); //para raspberry
-//				System.getProperties().setProperty("java.naming.provider.url", "localhost:1099");
+				System.getProperties().setProperty("java.naming.provider.url", GenericUtils.isWindows() ? "localhost:1099" : "192.168.1.250:1099" /*para raspberry*/);
 			}
-
 			GuiBackGTLLite guiBackTextilLevel = new GuiBackGTLLite(-1, VERSION);
 			// EventQueue queue =
 			// Toolkit.getDefaultToolkit().getSystemEventQueue();

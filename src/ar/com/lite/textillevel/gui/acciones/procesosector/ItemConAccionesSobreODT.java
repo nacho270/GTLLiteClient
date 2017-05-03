@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
 import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
+import ar.com.textillevel.util.ODTCodigoHelper;
 
 public class ItemConAccionesSobreODT extends JPanel {
 
@@ -38,13 +39,21 @@ public class ItemConAccionesSobreODT extends JPanel {
 
 	private JLabel getLblDescODT() {
 		if(descLblODT == null) {
-			descLblODT = new JLabel("<html><div style=\"font-size: 11px;font-family: sans-serif;\"><b>"+ odt.getCodigo() + "</b><div>"
-					+"<div style=\"font-size: 8px;font-family: sans-serif;\">" + odt.getProductoArticulo() +"</div></html>");
+			descLblODT = new JLabel(toHTML());
 			descLblODT.setBorder(null);
-			descLblODT.setSize(new Dimension(330, 40));
-			descLblODT.setPreferredSize(new Dimension(330, 40));
+			descLblODT.setSize(new Dimension(170, 50));
+			descLblODT.setPreferredSize(new Dimension(170, 50));
 		}
 		return descLblODT;
+	}
+
+	private String toHTML() {
+		return "<html><div style=\"font-size: 14px;font-family: sans-serif;\"><b>"+ getCodODTCustom() + "</b><div>"
+				+"<div style=\"font-size: 9px;font-family: sans-serif;\">" + odt.getProductoArticulo().toStringSinProducto() +"</div></html>";
+	}
+
+	private String getCodODTCustom() {
+		return ODTCodigoHelper.getInstance().formatCodigoSinAnioCompleto(odt.getCodigo());
 	}
 
 	private JPanel getPanBotones() {
@@ -54,8 +63,8 @@ public class ItemConAccionesSobreODT extends JPanel {
 			panBotones.add(getBtnIniciarOrCancelar());
 			panBotones.add(getBtnFinalizar());
 
-			panBotones.setSize(new Dimension(200, 35));
-			panBotones.setPreferredSize(new Dimension(200, 35));
+			panBotones.setSize(new Dimension(190, 35));
+			panBotones.setPreferredSize(new Dimension(190, 35));
 		}
 		return panBotones;
 	}

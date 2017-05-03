@@ -7,20 +7,21 @@ import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.rmi.RemoteException;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import javax.swing.JButton;
+import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.WindowConstants;
 
 import org.apache.taglibs.string.util.StringW;
 
@@ -33,16 +34,16 @@ import ar.com.textillevel.modulos.odt.enums.EAvanceODT;
 import ar.com.textillevel.modulos.odt.enums.EEstadoODT;
 import ar.com.textillevel.modulos.odt.enums.ESectorMaquina;
 import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
+import ar.com.textillevel.util.ODTCodigoHelper;
 
 public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesSobreODTEventListener {
 
 	private static final long serialVersionUID = 1L;
 
-	private JPanel panDetalle;
+	private static final long DOS_MINUTOS = 120000;
+
 	private ItemConAccionesSobreODTList odtListPanel;
-	private JPanel pnlBotones;
 	private JPanel panelCentral;
-	private JButton btnCerrar;
 	
 	private FWJNumericTextField txtCodODT;
 	private ESectorMaquina sector;
@@ -57,45 +58,54 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 		setTitle(sector.toString());
 		construct();
 		setModal(true);
+		
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		addWindowListener(new WindowAdapter() {
 			   public void windowOpened(WindowEvent e){
 				   getTxtCodODT().requestFocusInWindow();
 			   }
+
+			   public void windowClosing(WindowEvent e) {
+					int respuesta = FWJOptionPane.showQuestionMessage(JDialogProcesarEnSector.this, StringW.wordWrap("¿Está seguro que desea salir?"), "Pregunta");
+					if (respuesta == FWJOptionPane.YES_OPTION) {
+						System.exit(1);
+					}
+			   }
 		});
 
-		getOdtListPanel().updateListadoODTs();
+		Timer t = new Timer();
+		t.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				getOdtListPanel().updateListadoODTs();
+			}
+		}, 0, DOS_MINUTOS);
 	}
 
 	private void construct() {
 		setLayout(new GridBagLayout());
-		add(getPanDetalle(), GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 1, 1, 0, 1));
-		add(getPanelBotones(), GenericUtils.createGridBagConstraints(0, 1,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 1, 0));
-	}
+		JLabel lblODT = new JLabel("ODT:");
+		lblODT.setFont(new Font("SansSerif", Font.BOLD, 30));
 
-	private JPanel getPanDetalle() {
-		if(panDetalle == null) {
-			panDetalle = new JPanel();
-			panDetalle.setLayout(new GridBagLayout());
-			
-			JLabel lblODT = new JLabel("ODT:");
-			lblODT.setFont(new Font("SansSerif", Font.BOLD, 30));
-
-			panDetalle.add(lblODT, GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10, 10, 5, 5), 1, 1, 0, 0));
-			panDetalle.add(getTxtCodODT(), GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(10, 10, 5, 5), 1, 1, 0.5, 0));
-			panDetalle.add(getPanelCentral(), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 2, 1, 1, 1));
-		}
-	
-		return panDetalle;
+		JPanel subpanel = new JPanel(new FlowLayout());
+		subpanel.add(lblODT);
+		subpanel.add(getTxtCodODT());
+		
+		add(subpanel, GenericUtils.createGridBagConstraints(0, 0,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 5), 1, 1, 0, 0));
+		
+		add(getPanelCentral(), GenericUtils.createGridBagConstraints(0, 1, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 10, 0, 5), 1, 1, 1, 1));
+		
 	}
 
 	private JPanel getPanelCentral() {
 		if(panelCentral == null) {
 			panelCentral = new JPanel();
 			panelCentral.setLayout(new GridBagLayout());
-			panelCentral.add(getOdtListPanel(), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 1, 1, 0.8, 1));
+			panelCentral.add(getOdtListPanel(), GenericUtils.createGridBagConstraints(0, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 10, 5, 5), 1, 1, 0.8, 1));
 			JScrollPane sp = new JScrollPane(getTxtDatosODTProcesandose());
-			panelCentral.add(sp, GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(10, 10, 5, 5), 1, 1, 0.2, 0));
+			sp.setBorder(BorderFactory.createTitledBorder("EN PROCESO:"));
+			panelCentral.add(sp, GenericUtils.createGridBagConstraints(1, 0, GridBagConstraints.WEST, GridBagConstraints.BOTH, new Insets(0, 10, 5, 5), 1, 1, 0.2, 0));
 		}
 		return panelCentral;
 	}
@@ -103,6 +113,10 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 	private FWJNumericTextField getTxtCodODT() {
 		if(txtCodODT == null) {
 			txtCodODT = new FWJNumericTextField();
+			
+			txtCodODT.setPreferredSize(new Dimension(200, 40));
+			txtCodODT.setSize(new Dimension(200, 40));
+			
 			Font font1 = new Font("SansSerif", Font.BOLD, 30);
 			txtCodODT.setFont(font1);
 			
@@ -169,35 +183,6 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 		GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_PROCESO, EAvanceODT.POR_COMENZAR);
 		getOdtListPanel().updateListadoODTs();
 		getOdtListPanel().scrollToBottom();
-
-	}
-
-	private JPanel getPanelBotones() {
-		if(pnlBotones == null){
-			pnlBotones = new JPanel();
-			pnlBotones.setLayout(new FlowLayout(FlowLayout.CENTER));
-			pnlBotones.add(getBtnCerrar());
-			getBtnCerrar().setEnabled(true);
-		}
-		return pnlBotones;
-	}
-
-	private JButton getBtnCerrar() {
-		if(btnCerrar == null) {
-			btnCerrar = new JButton("Cerrar");
-			btnCerrar.addActionListener(new ActionListener() {
-
-				public void actionPerformed(ActionEvent e) {
-					int respuesta = FWJOptionPane.showQuestionMessage(JDialogProcesarEnSector.this, StringW.wordWrap("¿Está seguro que desea salir?"), "Pregunta");
-					if (respuesta == FWJOptionPane.YES_OPTION) {
-						System.exit(1);
-					}
-				}
-
-			});
-
-		}
-		return btnCerrar;
 	}
 
 	private ItemConAccionesSobreODTList getOdtListPanel() {
@@ -213,8 +198,8 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 			this.txtDatosODTProcesandose.setEditable(false);
 			this.txtDatosODTProcesandose.setFocusable(false);
 			
-			this.txtDatosODTProcesandose.setPreferredSize(new Dimension(150,150));
-			this.txtDatosODTProcesandose.setSize(new Dimension(150,150));
+			this.txtDatosODTProcesandose.setPreferredSize(new Dimension(220,150));
+			this.txtDatosODTProcesandose.setSize(new Dimension(220,150));
 		}
 		return txtDatosODTProcesandose;
 	}
@@ -229,8 +214,7 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 
 	private String extractDatosODT(OrdenDeTrabajo odt) {
 		StringBuilder sb = new StringBuilder();
-		return sb.append("EN PROCESO:")
-				.append("\nODT: " + odt.getCodigo())
+		return sb.append("ODT: " + ODTCodigoHelper.getInstance().formatCodigoSinAnioCompleto(odt.getCodigo()))
 				.toString();
 	}
 
