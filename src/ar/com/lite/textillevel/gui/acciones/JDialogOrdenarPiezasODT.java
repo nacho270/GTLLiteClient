@@ -100,8 +100,11 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 		super(owner);
 		this.odt = odt;
 		this.remitoEntrada = odt.getRemito();
-		setSize(new Dimension(590, 600)); //para raspberry
-//		setSize(new Dimension(630, 750));
+		if(GenericUtils.isWindows()) {
+			setSize(new Dimension(630, 750));
+		} else {
+			setSize(new Dimension(590, 600)); //para raspberry
+		}
 		setTitle("Cosido");
 		construct();
 		setDatos();

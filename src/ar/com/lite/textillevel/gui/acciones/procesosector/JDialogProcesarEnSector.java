@@ -128,7 +128,12 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 									getTxtCodODT().setValue(null);        	
 									return;
 								}
-								if(odt.getMaquinaActual().getSector() == sector) {
+								if(odt.getMaquinaActual() == null) {
+									FWJOptionPane.showErrorMessage(JDialogProcesarEnSector.this, StringW.wordWrap("La ODT " + txtCodODT.getText() + " no está en estado " + EEstadoODT.EN_PROCESO + ". Asegúrese de que haya pasado por algún sector anterior."), "Error");
+									getTxtCodODT().setValue(null);
+									return;
+								}
+								if(odt.getMaquinaActual() != null && odt.getMaquinaActual().getSector() == sector) {
 									FWJOptionPane.showErrorMessage(JDialogProcesarEnSector.this, "La ODT " + txtCodODT.getText() + " ya se encuentra en el sector", "Error");
 									getTxtCodODT().setValue(null);
 									return;

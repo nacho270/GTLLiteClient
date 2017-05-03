@@ -77,8 +77,11 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 		super(owner);
 		this.rs = rs;
 		this.idSistema = idSistema;
-//		setSize(new Dimension(590, 600)); //para rasperry
-		setSize(new Dimension(590, 750));
+		if(GenericUtils.isWindows()) {
+			setSize(new Dimension(630, 750));
+		} else {
+			setSize(new Dimension(590, 600)); //para raspberry
+		}
 		setTitle("Remito de Salida - Control de Piezas");
 		construct();
 		setDatos();
@@ -475,7 +478,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 				mapReImpresas.put(pr, true);
 			}
 			piezaODT.setMetros(metrosSalida); //solo para que se refleje en la impresión
-			new ImprimirCodigoPiezaODTHandler(piezaODT).imprimir();
+//			new ImprimirCodigoPiezaODTHandler(piezaODT).imprimir(); //FIXME: DESCOMENTAR CUANDO TENGAMOS IMPRESORA
 			piezaODT.setMetros(mtsOriganles); //undo
 			if(teniaDiferenciaEnMts) {
 				getTabla().setValueAt(getTextoEstadoControlTabla(EEstadoControlPiezaRemitoSalida.MTS_NO_OK_REIMPRESA), row, COL_STATUS_CONTROL);

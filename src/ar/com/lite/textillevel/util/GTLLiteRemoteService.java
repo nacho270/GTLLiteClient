@@ -81,7 +81,7 @@ public class GTLLiteRemoteService {
 	}
 
 	public static List<OrdenDeTrabajo> getAllNoFinalizadasBySector(ESectorMaquina sector) {
-		return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getAllNoFinalizadasBySector(sector);
+		return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getAllNoFinalizadasBySector(sector);
 	}
 
 	public static Terminal getTerminalData() {
@@ -89,9 +89,13 @@ public class GTLLiteRemoteService {
 		Terminal terminal = null;
 		try {
 			hostAddress = getFirstNonLoopbackAddress().getHostAddress();
-			terminal = gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(hostAddress);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Hubo un problema al calcular la IP del dispositivo " + hostAddress + " msg: " + e.getMessage());
+		}
+		try {
+			terminal = gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getByIP(hostAddress);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("No se pudo inicializar el sistema. msg: " + e.getMessage());
 		}
 		if(terminal == null) {
 			List<Terminal> all = gtlBeanFactory1.getBean2(TerminalFacadeRemote.class).getAll();
