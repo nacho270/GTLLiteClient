@@ -83,12 +83,28 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 	public JDialogAsignarMetrosPiezasODT(Frame owner, OrdenDeTrabajo odt) {
 		super(owner);
 		this.odt = odt;
+		completarOrdenesPiezas();
 		this.remitoEntrada = odt.getRemito();
 		setSize(new Dimension(630, 750));
 		setTitle("Orden De Trabajo");
 		construct();
 		setDatos();
 		setModal(true);
+	}
+
+	private void completarOrdenesPiezas() {
+		boolean sinOrdenesSeteado=true;
+		for(PiezaODT podt : odt.getPiezas()) {
+			if(podt.getOrden() != null) {
+				sinOrdenesSeteado = false;
+				break;
+			}
+		}
+		if(sinOrdenesSeteado) {
+			for(int i=0; i<odt.getPiezas().size(); i++) {
+				odt.getPiezas().get(i).setOrden(i+1);
+			}
+		}
 	}
 
 	private void setDatos() {
