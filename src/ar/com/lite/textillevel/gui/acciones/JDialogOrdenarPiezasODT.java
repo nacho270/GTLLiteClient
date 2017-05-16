@@ -89,10 +89,14 @@ public class JDialogOrdenarPiezasODT extends JDialog {
 			if (o1.getOrden() != null && o2.getOrden() != null) {
 				return o1.getOrden().compareTo(o2.getOrden());
 			}
-			if (o1.getOrden() == null) {
+			if (o1.getOrden() == null && o2.getOrden() != null) {
 				return 1;
 			}
-			return -1;
+			if (o1.getOrden() != null && o2.getOrden() == null) {
+				return -1;
+			} else {
+				return 0;
+			}
 		}
 	};
 
