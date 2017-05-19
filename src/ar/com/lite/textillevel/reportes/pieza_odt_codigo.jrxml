@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="pieza_odt_codigo" pageWidth="290" pageHeight="233" columnWidth="280" leftMargin="5" rightMargin="5" topMargin="0" bottomMargin="0">
-	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="0"/>
+	<property name="ireport.zoom" value="4.0"/>
+	<property name="ireport.x" value="213"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="IMAGEN" class="java.lang.Object"/>
 	<parameter name="CLIENTE" class="java.lang.String"/>
@@ -18,7 +18,7 @@
 				<reportElement x="0" y="5" width="277" height="226"/>
 			</rectangle>
 			<textField>
-				<reportElement x="127" y="24" width="56" height="20"/>
+				<reportElement x="114" y="24" width="70" height="20"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="13" isBold="true"/>
 				</textElement>
@@ -73,14 +73,14 @@
 				<text><![CDATA[PRODUCTO:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="187" y="24" width="41" height="20"/>
+				<reportElement x="184" y="24" width="41" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[ANCHO:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="230" y="24" width="46" height="20"/>
+				<reportElement x="224" y="24" width="52" height="20"/>
 				<textElement verticalAlignment="Middle">
 					<font size="12" isBold="true"/>
 				</textElement>
@@ -101,14 +101,14 @@
 				<text><![CDATA[REMITO:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="64" y="25" width="36" height="20"/>
+				<reportElement x="51" y="24" width="36" height="20"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="13" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$P{CLIENTE}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="15" y="25" width="48" height="20"/>
+				<reportElement x="3" y="25" width="48" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" isUnderline="false"/>
 				</textElement>
@@ -154,7 +154,7 @@
 				<imageExpression class="java.awt.Image"><![CDATA[$P{IMAGEN}]]></imageExpression>
 			</image>
 			<staticText>
-				<reportElement x="101" y="25" width="25" height="20"/>
+				<reportElement x="88" y="25" width="25" height="20"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<font isBold="true" isUnderline="false"/>
 				</textElement>
