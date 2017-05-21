@@ -12,6 +12,7 @@
 	<parameter name="PIEZA" class="java.lang.String"/>
 	<parameter name="METROS" class="java.lang.String"/>
 	<parameter name="TERMINAL" class="java.lang.String"/>
+	<parameter name="ART_CLIENTE" class="java.lang.String"/>
 	<detail>
 		<band height="233" splitType="Stretch">
 			<rectangle>
@@ -136,14 +137,14 @@
 				<text><![CDATA[Textil Level S.A. Tintorería y Estampería industrial]]></text>
 			</staticText>
 			<staticText>
-				<reportElement positionType="Float" x="17" y="119" width="56" height="14"/>
+				<reportElement positionType="Float" x="17" y="109" width="56" height="14"/>
 				<textElement verticalAlignment="Top">
 					<font size="10" isBold="true" isUnderline="false"/>
 				</textElement>
 				<text><![CDATA[TERMINAL:]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="75" y="119" width="25" height="14"/>
+			<textField isBlankWhenNull="true">
+				<reportElement x="75" y="109" width="25" height="14"/>
 				<textElement verticalAlignment="Top">
 					<font size="10" isBold="true"/>
 				</textElement>
@@ -172,6 +173,18 @@
 			<rectangle>
 				<reportElement x="137" y="84" width="1" height="61"/>
 			</rectangle>
+			<staticText>
+				<reportElement positionType="Float" x="8" y="126" width="42" height="14"/>
+				<textElement verticalAlignment="Top">
+					<font size="10" isBold="true" isUnderline="false"/>
+				</textElement>
+				<text><![CDATA[ART.CL:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="50" y="126" width="82" height="14"/>
+				<textElement/>
+				<textFieldExpression class="java.lang.String"><![CDATA[$P{ART_CLIENTE}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>

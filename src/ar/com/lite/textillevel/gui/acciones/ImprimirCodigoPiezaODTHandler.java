@@ -7,6 +7,7 @@ import java.util.Map;
 import main.GTLLiteGlobalCache;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import ar.com.fwcommon.util.StringUtil;
 import ar.com.lite.textillevel.gui.util.GenericUtils;
 import ar.com.lite.textillevel.util.JasperHelper;
 import ar.com.textillevel.modulos.odt.entidades.OrdenDeTrabajo;
@@ -38,6 +39,8 @@ public class ImprimirCodigoPiezaODTHandler {
 			mapaParams.put("PIEZA", String.valueOf(pieza.toString()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));	
 			mapaParams.put("TERMINAL",  GTLLiteGlobalCache.getInstance().getTerminalData().getCodigo());
+			String articuloCliente = odt.getRemito().getArticuloCliente();
+			mapaParams.put("ART_CLIENTE", StringUtil.isNullOrEmpty(articuloCliente) ? " - " : articuloCliente);
 			JasperPrint jasperPrint = JasperHelper.fillReport(reporte, mapaParams, Collections.singletonList(pieza));
 			JasperHelper.imprimirReporte(jasperPrint, false, false, 1);
 		} catch (Exception e) {
