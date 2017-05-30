@@ -33,22 +33,23 @@ public class ODTDatosMostradoHelper {
 		if(getColor() != null) {
 			return getColor().getNombre();
 		} else {
-			return "";
+			return "Sin Definir";
 		}
 	}
 
 	public Color getColor() {
-		if(odt.getProductoArticulo().getTipo() == ETipoProducto.TENIDO) {
-			return odt.getProductoArticulo().getColor();
-		} else if(odt.getProductoArticulo().getTipo() == ETipoProducto.ESTAMPADO) {
-			return odt.getProductoArticulo().getVariante().getColorFondo();
+		ETipoProducto tipo = odt.getIProductoParaODT().getTipo();
+		if(tipo == ETipoProducto.TENIDO) {
+			return odt.getProductoArticulo() == null ? null : odt.getProductoArticulo().getColor();
+		} else if(tipo == ETipoProducto.ESTAMPADO) {
+			return odt.getProductoArticulo() == null ? null : odt.getProductoArticulo().getVariante().getColorFondo();
 		} else {
 			return null;
 		}
 	}
 
 	public String getDescArticulo() {
-		return odt.getProductoArticulo().getArticulo() != null ? odt.getProductoArticulo().getArticulo().getNombre() : odt.getProductoArticulo().getArticulo().getDescripcion();
+		return odt.getIProductoParaODT().getArticulo().getNombre();
 	}
 
 	public String getDescGramaje() {

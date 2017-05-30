@@ -90,7 +90,7 @@ public class ImpresionODTHandler {
 		public ODTTO(final OrdenDeTrabajo odt) {
 			ODTDatosMostradoHelper odtDatosHelper = new ODTDatosMostradoHelper(odt);
 			this.codigo = odt.getCodigo();
-			this.proceso = odt.getProductoArticulo().toString();
+			this.proceso = odt.getIProductoParaODT().toString();
 			this.cliente = odtDatosHelper.getDescCliente();
 			this.articulo = odtDatosHelper.getDescArticulo();
 			this.tarima = odtDatosHelper.getDescTarima();

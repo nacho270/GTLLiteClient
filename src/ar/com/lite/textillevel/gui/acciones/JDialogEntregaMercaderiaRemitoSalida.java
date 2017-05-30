@@ -109,7 +109,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 	private String extractODTCodes(List<OrdenDeTrabajo> odts) {
 		List<String> odtToStrings = new ArrayList<>();
 		for(OrdenDeTrabajo odt : odts) {
-			odtToStrings.add(odt.getProductoArticulo().toString());
+			odtToStrings.add(odt.getIProductoParaODT().toString());
 		}
 		return StringUtil.getCadena(odtToStrings, " / ");
 	}

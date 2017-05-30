@@ -34,8 +34,8 @@ public class ImprimirCodigoPiezaODTHandler {
 			mapaParams.put("CLIENTE", String.valueOf(odt.getRemito().getCliente().getNroCliente()));
 			mapaParams.put("ODT_CODIGO", ODTCodigoHelper.getInstance().formatCodigo2DigitosAnio(odt.getCodigo()));
 			mapaParams.put("NRO_REMITO", String.valueOf(odt.getRemito().getNroRemito()));
-			mapaParams.put("ARTICULO", odt.getProductoArticulo().getArticulo().toString());
-			mapaParams.put("PRODUCTO", odt.getProductoArticulo().toString());
+			mapaParams.put("ARTICULO", odt.getIProductoParaODT().getArticulo().toString());
+			mapaParams.put("PRODUCTO", odt.getIProductoParaODT().toString());
 			mapaParams.put("PIEZA", String.valueOf(pieza.toString()) + (pieza.getEsDeSegunda() != null && pieza.getEsDeSegunda() ? " #" : ""));
 			mapaParams.put("METROS", GenericUtils.getDecimalFormat().format(pieza.getMetros()));	
 			mapaParams.put("TERMINAL",  GTLLiteGlobalCache.getInstance().getTerminalData().getCodigo());

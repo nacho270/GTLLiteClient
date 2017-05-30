@@ -49,7 +49,7 @@ public class ItemConAccionesSobreODT extends JPanel {
 
 	private String toHTML() {
 		return "<html><div style=\"font-size: 14px;font-family: sans-serif;\"><b>"+ getCodODTCustom() + "</b><div>"
-				+"<div style=\"font-size: 9px;font-family: sans-serif;\">" + odt.getProductoArticulo().toStringSinProducto() +"</div></html>";
+				+"<div style=\"font-size: 9px;font-family: sans-serif;\">" + odt.getIProductoParaODT().toStringSinProducto() +"</div></html>";
 	}
 
 	private String getCodODTCustom() {

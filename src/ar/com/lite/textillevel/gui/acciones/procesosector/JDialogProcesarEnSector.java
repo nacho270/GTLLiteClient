@@ -126,12 +126,12 @@ public class JDialogProcesarEnSector extends JDialog implements ItemConAccionesS
 	            public void keyPressed(final KeyEvent e) {
 	                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 	                	if(!alertMostrandose) {
-	                		if (txtCodODT.getText().trim().length() != 8) {
-	                			alertMostrandose = true;
-	                			FWJOptionPane.showErrorMessage(JDialogProcesarEnSector.this, "Ingrese un código válido.", "Error");
-	                			getTxtCodODT().setValue(null);
-	                			return;
-	                		}
+//	                		if (txtCodODT.getText().trim().length() != 8) {
+//	                			alertMostrandose = true;
+//	                			FWJOptionPane.showErrorMessage(JDialogProcesarEnSector.this, "Ingrese un código válido.", "Error");
+//	                			getTxtCodODT().setValue(null);
+//	                			return;
+//	                		}
 	                		String codidoIngresado = txtCodODT.getText();
 	                		OrdenDeTrabajo odt;
 							try {
