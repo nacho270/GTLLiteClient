@@ -77,11 +77,11 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 		super(owner);
 		this.rs = rs;
 		this.idSistema = idSistema;
-		if(GenericUtils.isWindows()) {
-			setSize(new Dimension(630, 750));
-		} else {
+//		if(GenericUtils.isWindows()) {
+//			setSize(new Dimension(630, 750));
+//		} else {
 			setSize(new Dimension(590, 600)); //para raspberry
-		}
+//		}
 		setTitle("Remito de Salida - Control de Piezas");
 		construct();
 		setDatos();
