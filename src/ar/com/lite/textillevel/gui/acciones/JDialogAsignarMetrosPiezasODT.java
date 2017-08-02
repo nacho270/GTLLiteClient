@@ -25,7 +25,6 @@ import javax.swing.border.EtchedBorder;
 
 import org.apache.taglibs.string.util.StringW;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -357,6 +356,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		private JButton btnEliminarPiezas;
 		
 		private Map<String, Boolean> mapaPiezasImpresas = Maps.newHashMap();
+		private Map<Integer, PiezaODT> mapaPiezas = Maps.newHashMap();
 
 		public PanelTablaPieza(OrdenDeTrabajo odt) {
 			getBotonAgregar().setVisible(false);
@@ -385,8 +385,13 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 		protected void agregarElemento(PiezaODT elemento) {
 			Object[] row = getRow(elemento);
 			getTabla().addRow(row);
+			mapaPiezas.put(getTabla().getRowCount()-1, elemento);
 		}
 
+		private String toStringPieza(PiezaODT podt) {
+			return podt.getId() + " " + podt.getOrden() + " " + podt.getOrdenSubpieza();
+		}
+	
 		private Object[] getRow(PiezaODT elemento) {
 			Object[] row = new Object[CANT_COLS];
 			row[COL_NRO_ORDEN_PIEZA_ODT] = elemento.toString();
@@ -397,6 +402,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 			return row;
 		}
 
+		
 		@Override
 		protected FWJTable construirTabla() {
 
@@ -428,7 +434,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				public void cellEdited(int cell, final int row) {
 					if(cell == COL_METROS_PIEZA_ODT) {
 						String metrosStr = (String)getTabla().getValueAt(row, COL_METROS_PIEZA_ODT);
-						final PiezaODT piezaODT = getElemento(row);
+						PiezaODT piezaODT = getElemento(row);
 						if(!StringUtil.isNullOrEmpty(metrosStr) && !metrosStr.equals("0")) {
 							final BigDecimal metrosNew = new BigDecimal(metrosStr);
 							float dif = metrosNew.subtract(piezaODT.getPiezaRemito().getMetros()).abs().floatValue();
@@ -479,7 +485,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 				private void handleImprimir(int row) {
 					PiezaODT piezaODT = getElemento(row);
-					boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(piezaODT.toString())).or(false).booleanValue();
+					boolean piezaImpresa = Optional.fromNullable(mapaPiezasImpresas.get(toStringPieza(piezaODT))).or(false).booleanValue();
 					if (piezaImpresa && piezaODT.getMetros() != null && piezaODT.getMetros().floatValue() > 0f) {
 						int respuesta = FWJOptionPane.showQuestionMessage(JDialogAsignarMetrosPiezasODT.this, StringW.wordWrap("La pieza Nro. " + piezaODT.toString() + " ya fue impresa.\nDesea imprimirla nuevamente?"), "Pregunta");
 						if (respuesta == FWJOptionPane.YES_OPTION) {
@@ -492,7 +498,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 				private void imprimir(PiezaODT pieza) {
 					new ImprimirCodigoPiezaODTHandler(pieza).imprimir();
-					mapaPiezasImpresas.put(pieza.toString(), true);
+					mapaPiezasImpresas.put(toStringPieza(pieza), true);
 				}
 
 			};
@@ -517,19 +523,13 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				odt.setOrdenEnMaquina(info.getOrdenEnMaquina());
 			}
 			JDialogAsignarMetrosPiezasODT.this.odt = GTLLiteRemoteService.grabarAndRegistrarCambioEstadoAndAvance(odt, EEstadoODT.EN_OFICINA, EAvanceODT.POR_COMENZAR);
-			for(int i=0; i<getTabla().getRowCount(); i++) {
-				PiezaODT elemento = getElemento(i);
-				getTabla().setValueAt(findObj(elemento, odt.getPiezas()), i, COL_OBJ); //sincronizo los objetos con los otros persistents
-			}
+			llenarPiezasNuevamente();
 		}
 
-		private PiezaODT findObj(PiezaODT elemento, List<PiezaODT> piezas) {
-			for(PiezaODT pieza : piezas) {
-				if(Objects.equal(pieza.getOrden(), elemento.getOrden()) && Objects.equal(pieza.getOrdenSubpieza(), elemento.getOrdenSubpieza())) {
-					return pieza;
-				}
-			}
-			throw new IllegalStateException("No se pudo recuperar la pieza persistent para " + elemento);
+		private void llenarPiezasNuevamente() {
+			limpiar();
+			mapaPiezas.clear();
+			agregarElementosODTEnBaseAlOrden();
 		}
 
 		private void actualizarTotales() {
@@ -568,7 +568,8 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		@Override
 		protected PiezaODT getElemento(int fila) {
-			return (PiezaODT)getTabla().getValueAt(fila, COL_OBJ);
+//			return (PiezaODT)getTabla().getValueAt(4, COL_OBJ);
+			return mapaPiezas.get(fila);
 		}
 
 		@Override
@@ -589,7 +590,8 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 							PiezaODT piezaODT = getElemento(selectedRow);
 							odt.getPiezas().remove(piezaODT);
 							getTabla().removeRow(selectedRow);
-							mapaPiezasImpresas.remove(piezaODT.toString());
+							mapaPiezas.remove(selectedRow);
+							mapaPiezasImpresas.remove(toStringPieza(piezaODT));
 							ajustarSubordenes(piezaODT.getOrden());
 							actualizarTotales();
 						}
@@ -654,6 +656,7 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 									podtChild.setOrdenSubpieza(j+1);
 									odt.getPiezas().add(i+j+1, podtChild);
 									getTabla().insertRow(i+j+1, getRow(podtChild));
+									mapaPiezas.put(i+j+1, podtChild);
 								}
 							}
 						}
@@ -710,8 +713,9 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 				btnRevertir.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						limpiar();
-						agregarElementosODTEnBaseAlOrden();
+						mapaPiezas.clear();
 						reversed = !reversed;
+						agregarElementosODTEnBaseAlOrden();
 					}
 
 				});
@@ -721,11 +725,11 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 
 		private void agregarElementosODTEnBaseAlOrden() {
 			if (reversed) {
-				agregarElementos(odt.getPiezas());
-			} else {
 				Collections.sort(odt.getPiezas());
 				List<PiezaODT> piezas = Lists.reverse(odt.getPiezas());
 				agregarElementos(piezas);
+			} else {
+				agregarElementos(odt.getPiezas());
 			}
 		}
 
