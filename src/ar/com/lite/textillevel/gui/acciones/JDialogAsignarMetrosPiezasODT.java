@@ -647,7 +647,6 @@ public class JDialogAsignarMetrosPiezasODT extends JDialog {
 						//seteo los datos de subpieza solo si la acción es "DIVIDIR" i.e. está habilitada sobre una piezaODT que NO es una subpieza 
 						for(int i=0; i<allPiezasSizeOriginal; i++) {
 							if(i == rowToSplit) {
-								OrdenDeTrabajo odt = podtParent.getOdt();
 								for(int j=0; j < cantSubpiezas; j++) {
 									PiezaODT podtChild = new PiezaODT();
 									podtChild.setPiezaRemito(podtParent.getPiezaRemito());
