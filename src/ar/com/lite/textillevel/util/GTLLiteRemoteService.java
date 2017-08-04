@@ -143,7 +143,7 @@ public class GTLLiteRemoteService {
 			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getPiezaODTByCodigo(codPiezaODT);
 		}
 		if("1".equals(idSistema)) {//es la B
-			return gtlBeanFactory1.getBean2(OrdenDeTrabajoFacadeRemote.class).getPiezaODTByCodigo(codPiezaODT);
+			return gtlBeanFactory2.getBean2(OrdenDeTrabajoFacadeRemote.class).getPiezaODTByCodigo(codPiezaODT);
 		}
 		return null;
 	}
