@@ -10,9 +10,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+import main.GTLLiteGlobalCache;
 import ar.com.fwcommon.componentes.error.FWException;
 import ar.com.fwcommon.util.BeanFactoryRemoteAbstract;
 import ar.com.fwcommon.util.StringUtil;
+import ar.com.textillevel.entidades.cuenta.to.ETipoDocumento;
 import ar.com.textillevel.entidades.documentos.remito.RemitoSalida;
 import ar.com.textillevel.entidades.portal.UsuarioSistema;
 import ar.com.textillevel.entidades.to.TerminalServiceResponse;
@@ -29,7 +31,6 @@ import ar.com.textillevel.modulos.odt.to.InfoAsignacionMaquinaTO;
 import ar.com.textillevel.modulos.terminal.entidades.Terminal;
 import ar.com.textillevel.modulos.terminal.facade.api.remote.TerminalFacadeRemote;
 import ar.com.textillevel.util.GestorTerminalBarcode;
-import main.GTLLiteGlobalCache;
 
 public class GTLLiteRemoteService {
 
@@ -131,6 +132,25 @@ public class GTLLiteRemoteService {
 		return gtlBeanFactory2.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());
 	}
 
+	public static void marcarEntregado(String idSistema, RemitoSalida rs) {
+		String nombreTerminal = GTLLiteGlobalCache.getInstance().getTerminalData().getNombre();
+		if ("0".equals(idSistema)) {// es la A
+			String codigo = crearCodigoBarras(ETipoDocumento.REMITO_SALIDA, rs.getNroRemito(), false);
+			gtlBeanFactory1.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, nombreTerminal);
+		}
+		if ("1".equals(idSistema)) {// es la B
+			String codigo = crearCodigoBarras(ETipoDocumento.REMITO_SALIDA, rs.getNroRemito(), false);
+			gtlBeanFactory2.getBean2(EntregaReingresoDocumentosFacadeRemote.class).marcarEntregado(codigo, nombreTerminal);
+		}
+	}
+
+	private static String crearCodigoBarras(ETipoDocumento tipoDocumento, Integer nro, boolean test) {
+		if (tipoDocumento.getPrefijoCodigoBarras() == null) {
+			throw new UnsupportedOperationException("No se ha definido el prefijo");
+		}
+		return tipoDocumento.getPrefijoCodigoBarras() + nro + (test ? "1" : "0");
+	}
+	
 	public static TerminalServiceResponse reingresar(String codigo) {
 		if (codigo.endsWith("0")) {
 			return gtlBeanFactory1.getBean2(EntregaReingresoDocumentosFacadeRemote.class).reingresar(codigo, GTLLiteGlobalCache.getInstance().getTerminalData().getNombre());

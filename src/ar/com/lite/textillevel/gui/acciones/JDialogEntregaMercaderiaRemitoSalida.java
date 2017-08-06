@@ -395,6 +395,7 @@ public class JDialogEntregaMercaderiaRemitoSalida extends JDialog {
 
 		private void guardarRemitoSalida() {
 			JDialogEntregaMercaderiaRemitoSalida.this.rs = GTLLiteRemoteService.guardarRemitoSalida(idSistema, rs);
+			GTLLiteRemoteService.marcarEntregado(idSistema, rs);
 			for(int i=0; i<getTabla().getRowCount(); i++) {
 				getTabla().setValueAt(rs.getPiezas().get(i), i, COL_OBJ);
 			}
